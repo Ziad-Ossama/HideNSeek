@@ -38,7 +38,20 @@ Secure Communication: Exchange sensitive information without raising suspicion
 Digital Watermarking: Protect your intellectual property by embedding ownership information
 Backup Critical Data: Store important credentials within ordinary-looking media files
 Privacy Protection: Keep your personal information hidden from prying eyes
+
 🧩 Project Structure
+```
+HideNSeek/
+├── assets/              # Screenshots and demo materials
+├── src/                 # Source code
+│   ├── main.py          # Main application and GUI
+│   ├── img.py           # Image steganography engine
+│   └── gif.py           # GIF steganography engine
+├── history.json         # Operation history storage
+├── requirements.txt     # Python dependencies
+└── README.md            # Documentation
+
+```
 ⚙️ Technologies
 CustomTkinter: For the sleek, modern UI
 Pillow & NumPy: Image processing and manipulation
