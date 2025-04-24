@@ -1,0 +1,32 @@
+[
+    {
+        "timestamp": "2025-04-24 20:05:43",
+        "operation": "Key Generation",
+        "details": "Generated a new encryption key for Image-Stego."
+    },
+    {
+        "timestamp": "2025-04-24 20:12:26",
+        "operation": "Embed",
+        "details": "Embedded 1 files into C:/Users/Ziad/Desktop/63.png (Image-Stego)"
+    },
+    {
+        "timestamp": "2025-04-24 20:13:02",
+        "operation": "Key Generation",
+        "details": "Generated a new encryption key for Image-Stego."
+    },
+    {
+        "timestamp": "2025-04-24 20:13:36",
+        "operation": "Extract",
+        "details": "Extracted 1 files from C:/Users/Ziad/Desktop/63.png to C:/Users/Ziad/Desktop\\Extracted_63_20250424_201336 (Image-Stego)"
+    },
+    {
+        "timestamp": "2025-04-24 20:17:16",
+        "operation": "Key Generation",
+        "details": "Generated a new encryption key for GIF-Stego."
+    },
+    {
+        "timestamp": "2025-04-24 20:17:32",
+        "operation": "Embed",
+        "details": "Embedded 1 files into C:/Users/Ziad/Desktop/64.gif (GIF-Stego)"
+    }
+]

@@ -1,0 +1,7 @@
+2025-04-24 20:11:08,770 - ERROR - Embedding failed: Data too large for carrier image. Required: 174253840 bits, Available: 2205000 bits
+2025-04-24 20:12:41,458 - ERROR - Extraction failed: Password mismatch: incorrect password provided
+2025-04-24 20:13:03,885 - ERROR - Extraction failed: File integrity check failed
+2025-04-24 20:13:21,233 - ERROR - Extraction failed: Password mismatch: incorrect password provided
+2025-04-24 20:17:26,877 - INFO - GIF part size: 186967 bytes
+2025-04-24 20:17:26,887 - INFO - Hidden data size: 80508 bytes
+2025-04-24 20:17:26,887 - INFO - Total output size: 267479 bytes

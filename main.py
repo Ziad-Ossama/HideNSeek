@@ -177,8 +177,15 @@ class SteganographyApp:
         self.setup_gif_stego_frame()
         self.setup_history_frame()
 
-        self.active_frame = "image_stego"
+        # Ensure the active frame is set and displayed
+        print("Setting up GUI: Initializing frames...")
+        print(f"Available frames: {list(self.frames.keys())}")
+        self.active_frame = None  # Reset active frame to force display
         self.show_frame("image_stego")
+        print(f"Displayed frame: {self.active_frame}")
+        
+        # Force a GUI update to ensure rendering
+        self.root.update_idletasks()
 
     def show_frame(self, frame_name):
         """Show the specified frame in the content area and update sidebar button styles."""
@@ -220,6 +227,7 @@ class SteganographyApp:
         """Setup the Image-Stego frame with all steganography features."""
         frame = ctk.CTkFrame(self.content_frame, corner_radius=10)
         self.frames["image_stego"] = frame
+        print("Created Image-Stego frame")
 
         scrollable_frame = ctk.CTkScrollableFrame(frame, corner_radius=10)
         scrollable_frame.pack(fill="both", expand=True, padx=5, pady=5)
@@ -247,9 +255,7 @@ class SteganographyApp:
 
         self.data_section = ctk.CTkFrame(scrollable_frame, corner_radius=10)
         self.data_section.pack(fill="x", pady=5)
-#####################################################################################################        
-        
-#####################################################################################################
+
         ctk.CTkLabel(self.data_section, text="Data to Hide", font=main_font).pack(pady=(10, 10))
 
         self.load_data_button = ctk.CTkButton(
@@ -265,13 +271,11 @@ class SteganographyApp:
         
         self.key_section = ctk.CTkFrame(scrollable_frame, corner_radius=10)
         self.key_section.pack(fill="x", pady=5 )
-##########################################################################################################
 
-############################################################################################################
         ctk.CTkLabel(self.key_section, text="Encryption Key", font=main_font).pack(pady=(10, 10))
         self.generate_key_frame = ctk.CTkFrame(self.key_section, fg_color="transparent")
         self.generate_key_frame.pack(pady=2)
-        self.key_entry = ctk.CTkEntry(self.generate_key_frame, width=300, placeholder_text="Enter or generate a key" , font=("Helvetica", 14, "normal") , state = "disabled" ,)
+        self.key_entry = ctk.CTkEntry(self.generate_key_frame, width=300, placeholder_text="Enter or generate a key" , font=("Helvetica", 14, "normal") , state = "disabled")
         self.key_entry.pack(pady=(0, button_pady))
         self.generate_key_button = ctk.CTkButton(
             self.generate_key_frame, text="Generate", command=self.generate_key,
@@ -288,9 +292,7 @@ class SteganographyApp:
 
         self.auth_section = ctk.CTkFrame(scrollable_frame, corner_radius=10)
         self.auth_section.pack(fill="x", pady=5)
-#############################################################################################
 
-#################################################################################################
         ctk.CTkLabel(self.auth_section, text="Authentication", font=main_font).pack(pady=(10, 10))
         self.password_entry = ctk.CTkEntry(self.auth_section, show="*", width=300, state = "disabled" , placeholder_text="Enter password (optional)" , font=("Helvetica", 14, "normal"))
         self.password_entry.pack(pady=(0, button_pady))
@@ -299,14 +301,10 @@ class SteganographyApp:
 
         self.action_frame = ctk.CTkFrame(scrollable_frame, corner_radius=10)
         self.action_frame.pack(fill="x", pady=5)
-#############################################################################################
 
-#################################################################################################
-        # Replace the current button container code with this:
         button_container = ctk.CTkFrame(self.action_frame, fg_color="transparent")
         button_container.pack(pady=(5, 5), fill="x")
 
-        # Center frame to hold the buttons
         center_frame = ctk.CTkFrame(button_container, fg_color="transparent")
         center_frame.pack(pady=10, padx=10)
 
@@ -330,15 +328,13 @@ class SteganographyApp:
             center_frame, text="View Metadata", command=self.start_view_metadata,
             corner_radius=8, fg_color="#4CAF50", hover_color="#388E3C", width=button_width,
             font=("Helvetica", button_size, "bold") , state = "disabled" ,
-            text_color_disabled="#8fbf8f",  # Lighter green for disabled stat   # Text color when disabled 
+            text_color_disabled="#8fbf8f"
         )
         self.metadata_button.pack(side="left", padx=10)
 
         self.progress_frame = ctk.CTkFrame(scrollable_frame, corner_radius=10)
         self.progress_frame.pack(fill="x", pady=5)
-#############################################################################################
 
-#################################################################################################
         self.progress_label = ctk.CTkLabel(
             self.progress_frame, text="Progress: 0%", font=("Helvetica", 12, "bold"), text_color="#66BB6A"
         )
@@ -561,12 +557,6 @@ class SteganographyApp:
 
         self.update_history_view()
 
-    def show_frame(self, frame_name):
-        """Show the specified frame in the content area."""
-        for frame in self.frames.values():
-            frame.pack_forget()
-        self.frames[frame_name].pack(fill="both", expand=True)
-
     def show_help(self):
         """Show a help message with instructions."""
         messagebox.showinfo("Help", "HideNSeek Steganography Application\n\n"
@@ -601,45 +591,46 @@ class SteganographyApp:
             else:
                 temp_logic.get_cipher(key_str)
 
-            carrier_image = Image.open(self.carrier_image_path).convert('RGB')
-            image_array = np.array(carrier_image, dtype=np.uint8)
-            flat_image = image_array.ravel()
+            with Image.open(self.carrier_image_path) as carrier_image:
+                carrier_image = carrier_image.convert('RGB')
+                image_array = np.array(carrier_image, dtype=np.uint8)
+                flat_image = image_array.ravel()
 
-            total_size = sum(os.path.getsize(path) for path in self.data_file_path)
-            author = self.author_entry.get().strip() or "N/A"
-            author_bytes = author.encode('utf-8', errors='replace')[:50].ljust(50, b' ')
-            timestamp = str(int(time.time())).encode('utf-8')[:20].ljust(20, b' ')
-            metadata = b'\xCA\xFE\xBA\xBE' + author_bytes + timestamp
-            encrypted_metadata = temp_logic.cipher.encrypt(metadata)
-            estimated_metadata_size = len(encrypted_metadata) + 4
+                total_size = sum(os.path.getsize(path) for path in self.data_file_path)
+                author = self.author_entry.get().strip() or "N/A"
+                author_bytes = author.encode('utf-8', errors='replace')[:50].ljust(50, b' ')
+                timestamp = str(int(time.time())).encode('utf-8')[:20].ljust(20, b' ')
+                metadata = b'\xCA\xFE\xBA\xBE' + author_bytes + timestamp
+                encrypted_metadata = temp_logic.cipher.encrypt(metadata)
+                estimated_metadata_size = len(encrypted_metadata) + 4
 
-            file_count = len(self.data_file_path)
-            file_metadata_size = file_count * (50 + 10 + 4)
-            compressed_size = int(total_size * 0.7)
-            encrypted_size = compressed_size + 100 * file_count
-            total_data_size = (len(b'\xDE\xAD\xBE\xEF') + 32 + 32 + 4 + file_metadata_size + 
-                            encrypted_size + estimated_metadata_size + 32 + 4)
-            total_bits = total_data_size * 8 + 16
+                file_count = len(self.data_file_path)
+                file_metadata_size = file_count * (50 + 10 + 4)
+                compressed_size = int(total_size * 0.7)
+                encrypted_size = compressed_size + 100 * file_count
+                total_data_size = (len(b'\xDE\xAD\xBE\xEF') + 32 + 32 + 4 + file_metadata_size + 
+                                encrypted_size + estimated_metadata_size + 32 + 4)
+                total_bits = total_data_size * 8 + 16
 
-            if total_bits > len(flat_image):
-                return f"Data too large. Required: {total_bits} bits, Available: {len(flat_image)} bits"
+                if total_bits > len(flat_image):
+                    return f"Data too large. Required: {total_bits} bits, Available: {len(flat_image)} bits"
 
-            sample_size = min(5000, len(flat_image))
-            dummy_array = flat_image[:sample_size].copy()
-            sample_bits = [0] * sample_size
+                sample_size = min(5000, len(flat_image))
+                dummy_array = flat_image[:sample_size].copy()
+                sample_bits = [0] * sample_size
 
-            start_time = time.perf_counter()
-            for i in range(sample_size):
-                pixel_value = dummy_array[i] & 0xFE
-                bit_value = sample_bits[i]
-                dummy_array[i] = pixel_value | bit_value
-            end_time = time.perf_counter()
+                start_time = time.perf_counter()
+                for i in range(sample_size):
+                    pixel_value = dummy_array[i] & 0xFE
+                    bit_value = sample_bits[i]
+                    dummy_array[i] = pixel_value | bit_value
+                end_time = time.perf_counter()
 
-            time_taken = end_time - start_time
-            bits_per_second = sample_size / (time_taken if time_taken > 0 else 0.0001)
-            estimated_time = total_bits / bits_per_second
+                time_taken = end_time - start_time
+                bits_per_second = sample_size / (time_taken if time_taken > 0 else 0.0001)
+                estimated_time = total_bits / bits_per_second
 
-            return estimated_time * 1.10
+                return estimated_time * 1.10
 
         except Exception as e:
             return f"Estimation failed: {str(e)}"
@@ -658,23 +649,24 @@ class SteganographyApp:
             else:
                 temp_logic.get_cipher(key_str)
 
-            carrier_image = Image.open(self.carrier_image_path).convert('RGB')
-            image_array = np.array(carrier_image, dtype=np.uint8)
-            flat_image = image_array.ravel()
+            with Image.open(self.carrier_image_path) as carrier_image:
+                carrier_image = carrier_image.convert('RGB')
+                image_array = np.array(carrier_image, dtype=np.uint8)
+                flat_image = image_array.ravel()
 
-            total_bits = len(flat_image)
-            sample_size = min(5000, len(flat_image))
-            dummy_array = flat_image[:sample_size]
+                total_bits = len(flat_image)
+                sample_size = min(5000, len(flat_image))
+                dummy_array = flat_image[:sample_size]
 
-            start_time = time.perf_counter()
-            _ = [(pixel & 1) for pixel in dummy_array]
-            end_time = time.perf_counter()
+                start_time = time.perf_counter()
+                _ = [(pixel & 1) for pixel in dummy_array]
+                end_time = time.perf_counter()
 
-            time_taken = end_time - start_time
-            bits_per_second = sample_size / (time_taken if time_taken > 0 else 0.0001)
-            estimated_time = total_bits / bits_per_second
+                time_taken = end_time - start_time
+                bits_per_second = sample_size / (time_taken if time_taken > 0 else 0.0001)
+                estimated_time = total_bits / bits_per_second
 
-            return estimated_time * 1.05
+                return estimated_time * 1.05
 
         except Exception as e:
             return f"Estimation failed: {str(e)}"
@@ -843,6 +835,35 @@ class SteganographyApp:
         self.history_manager.add_entry("Key Generation", "Generated a new encryption key for GIF-Stego.")
         self.update_estimated_times()
 
+    def validate_inputs(self, password_entry, author_entry, for_embedding=True):
+        """Validate password and author inputs."""
+        password = password_entry.get().strip()
+        author = author_entry.get().strip()
+
+        # Sanitize password: remove control characters, limit length
+        if password:
+            password = "".join(c for c in password if c.isprintable())
+            if len(password.encode('utf-8')) > 100:
+                messagebox.showerror("Error", "Password must not exceed 100 bytes.")
+                return False, None, None
+
+        # Sanitize author: limit to 50 bytes, remove control characters
+        if author:
+            author = "".join(c for c in author if c.isprintable())
+            author_bytes = author.encode('utf-8', errors='replace')
+            if len(author_bytes) > 50:
+                messagebox.showerror("Error", "Author name must not exceed 50 bytes.")
+                return False, None, None
+            # Truncate to 50 bytes if necessary
+            author = author_bytes[:50].decode('utf-8', errors='ignore')
+
+        # If not embedding, ensure password is provided if required
+        if not for_embedding and not password:
+            messagebox.showerror("Error", "Password is required for extraction if it was set during embedding.")
+            return False, None, None
+
+        return True, password, author
+    
     def drop_carrier_image(self, event):
         """Handle dropped files for carrier image."""
         if self.operation_in_progress or self.image_load_lock.locked():
@@ -1171,9 +1192,12 @@ class SteganographyApp:
         """Start the image embedding process."""
         if self.operation_in_progress:
             return
-        threading.Thread(target=self._embed_data_thread, daemon=True).start()
+        valid, password, author = self.validate_inputs(self.password_entry, self.author_entry)
+        if not valid:
+            return
+        threading.Thread(target=lambda: self._embed_data_thread(password, author), daemon=True).start()
 
-    def _embed_data_thread(self):
+    def _embed_data_thread(self, password, author):
         """Thread for embedding data into image."""
         self.set_button_state(self.embed_button, "disabled", operation=True)
         if not self.carrier_image_path or not self.data_file_path:
@@ -1196,13 +1220,13 @@ class SteganographyApp:
         self.update_estimated_times()
 
         try:
-            # Call embed_data from img.py
+            # Call embed_data from img.py with validated inputs
             self.stego_image = self.image_logic.embed_data(
                 image_path=self.carrier_image_path,
                 data_file_paths=self.data_file_path,
                 key_str=key_str,
-                password=self.password_entry.get().strip(),
-                author=self.author_entry.get().strip(),
+                password=password,
+                author=author,
                 update_progress_callback=self.update_progress
             )
 
@@ -1226,13 +1250,16 @@ class SteganographyApp:
         """Start the image extraction process."""
         if self.operation_in_progress:
             return
-        threading.Thread(target=self._extract_data_thread, daemon=True).start()
+        valid, password, author = self.validate_inputs(self.password_entry, self.author_entry, for_embedding=False)
+        if not valid:
+            return
+        threading.Thread(target=lambda: self._extract_data_thread(password), daemon=True).start()
 
-    def _extract_data_thread(self):
-        """Thread for extracting data from image using SteganographyLogic."""
+    def _extract_data_thread(self, password):
         self.set_button_state(self.extract_button, "disabled", operation=True)
         if not self.carrier_image_path:
             messagebox.showerror("Error", "Select a carrier image.")
+            self.root.after(0, lambda: self.update_progress(0))  # Reset progress on error
             self.set_button_state(self.extract_button, "normal", operation=True)
             return
 
@@ -1240,16 +1267,19 @@ class SteganographyApp:
             current_hash = hashlib.sha256(f.read()).hexdigest()
         if self.carrier_image_hash != current_hash:
             messagebox.showerror("Error", "Carrier image has been modified since loading!")
+            self.root.after(0, lambda: self.update_progress(0))  # Reset progress on error
             self.set_button_state(self.extract_button, "normal", operation=True)
             return
 
         key_str = self.key_entry.get().strip()
         if not key_str:
             messagebox.showerror("Error", "Please provide a valid encryption key.")
+            self.root.after(0, lambda: self.update_progress(0))  # Reset progress on error
             self.set_button_state(self.extract_button, "normal", operation=True)
             return
 
         if not self.image_logic.get_cipher(key_str, self.root):
+            self.root.after(0, lambda: self.update_progress(0))  # Reset progress on error
             self.set_button_state(self.extract_button, "normal", operation=True)
             return
 
@@ -1258,8 +1288,6 @@ class SteganographyApp:
         self.update_estimated_times()
 
         try:
-            password = self.password_entry.get().strip()
-            # Pass the carrier filename to extract_data
             files_data, author, timestamp_readable = self.image_logic.extract_data(
                 self.carrier_image_path,
                 key_str,
@@ -1276,7 +1304,6 @@ class SteganographyApp:
                 self.set_button_state(self.extract_button, "normal", operation=True)
                 return
 
-            # Create a subfolder with the stego image name (carrier_image_path) and timestamp
             stego_name = os.path.splitext(os.path.basename(self.carrier_image_path))[0]
             timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
             subfolder_name = f"Extracted_{stego_name}_{timestamp}"
@@ -1284,8 +1311,6 @@ class SteganographyApp:
             os.makedirs(output_subfolder, exist_ok=True)
 
             for i, (new_filename, ext, file_data) in enumerate(files_data):
-                # The new_filename already includes the carrier name, file number, and date
-                # Just append the extension
                 output_filename = f"{new_filename}{ext}"
                 output_path = os.path.join(output_subfolder, output_filename)
                 with open(output_path, "wb") as output_file:
@@ -1322,6 +1347,7 @@ class SteganographyApp:
         self.set_button_state(self.metadata_button, "disabled", operation=True)
         if not self.carrier_image_path:
             messagebox.showerror("Error", "Select a carrier image.")
+            self.root.after(0, lambda: self.update_progress(0))  # Reset progress on error
             self.set_button_state(self.metadata_button, "normal", operation=True)
             return
 
@@ -1329,16 +1355,19 @@ class SteganographyApp:
             current_hash = hashlib.sha256(f.read()).hexdigest()
         if self.carrier_image_hash != current_hash:
             messagebox.showerror("Error", "Carrier image has been modified since loading!")
+            self.root.after(0, lambda: self.update_progress(0))  # Reset progress on error
             self.set_button_state(self.metadata_button, "normal", operation=True)
             return
 
         key_str = self.key_entry.get().strip()
         if not key_str:
             messagebox.showerror("Error", "Please provide a valid encryption key.")
+            self.root.after(0, lambda: self.update_progress(0))  # Reset progress on error
             self.set_button_state(self.metadata_button, "normal", operation=True)
             return
 
         if not self.image_logic.get_cipher(key_str, self.root):
+            self.root.after(0, lambda: self.update_progress(0))  # Reset progress on error
             self.set_button_state(self.metadata_button, "normal", operation=True)
             return
 
@@ -1376,9 +1405,12 @@ class SteganographyApp:
         """Start the GIF embedding process."""
         if self.operation_in_progress:
             return
-        threading.Thread(target=self._gif_embed_data_thread, daemon=True).start()
+        valid, password, author = self.validate_inputs(self.gif_password_entry, self.gif_author_entry)
+        if not valid:
+            return
+        threading.Thread(target=lambda: self._gif_embed_data_thread(password, author), daemon=True).start()
 
-    def _gif_embed_data_thread(self):
+    def _gif_embed_data_thread(self, password, author):
         """Thread for embedding data into GIF."""
         self.set_button_state(self.gif_embed_button, "disabled", operation=True)
         if not self.carrier_gif_path or not self.gif_data_file_path:
@@ -1401,9 +1433,6 @@ class SteganographyApp:
         self.update_estimated_times()
 
         try:
-            password = self.gif_password_entry.get().strip()
-            author = self.gif_author_entry.get().strip()
-
             output_data = self.gif_logic.embed_data(
                 self.carrier_gif_path, self.gif_data_file_path, key_str, password, author,
                 lambda value: self.root.after(0, lambda v=value: self.update_gif_progress(v))
@@ -1432,13 +1461,16 @@ class SteganographyApp:
         """Start the GIF extraction process."""
         if self.operation_in_progress:
             return
-        threading.Thread(target=self._gif_extract_data_thread, daemon=True).start()
+        valid, password, author = self.validate_inputs(self.gif_password_entry, self.gif_author_entry, for_embedding=False)
+        if not valid:
+            return
+        threading.Thread(target=lambda: self._gif_extract_data_thread(password), daemon=True).start()
 
-    def _gif_extract_data_thread(self):
-        """Thread for extracting data from GIF."""
+    def _gif_extract_data_thread(self, password):
         self.set_button_state(self.gif_extract_button, "disabled", operation=True)
         if not self.carrier_gif_path:
             messagebox.showerror("Error", "Select a carrier GIF.")
+            self.root.after(0, lambda: self.update_gif_progress(0))  # Reset progress on error
             self.set_button_state(self.gif_extract_button, "normal", operation=True)
             return
 
@@ -1446,16 +1478,19 @@ class SteganographyApp:
             current_hash = hashlib.sha256(f.read()).hexdigest()
         if self.carrier_gif_hash != current_hash:
             messagebox.showerror("Error", "Carrier GIF has been modified since loading!")
+            self.root.after(0, lambda: self.update_gif_progress(0))  # Reset progress on error
             self.set_button_state(self.gif_extract_button, "normal", operation=True)
             return
 
         key_str = self.gif_key_entry.get().strip()
         if not key_str:
             messagebox.showerror("Error", "Please provide a valid encryption key.")
+            self.root.after(0, lambda: self.update_gif_progress(0))  # Reset progress on error
             self.set_button_state(self.gif_extract_button, "normal", operation=True)
             return
 
         if not self.gif_logic.get_cipher(key_str, self.root):
+            self.root.after(0, lambda: self.update_gif_progress(0))  # Reset progress on error
             self.set_button_state(self.gif_extract_button, "normal", operation=True)
             return
 
@@ -1464,7 +1499,6 @@ class SteganographyApp:
         self.update_estimated_times()
 
         try:
-            password = self.gif_password_entry.get().strip()
             files_data, author, timestamp = self.gif_logic.extract_data(
                 self.carrier_gif_path, key_str, password,
                 lambda value: self.root.after(0, lambda v=value: self.update_gif_progress(v))
@@ -1479,7 +1513,7 @@ class SteganographyApp:
                 return
 
             carrier_filename = os.path.splitext(os.path.basename(self.carrier_gif_path))[0]
-            extraction_time = datetime.now().strftime('%Y-%m-%d')
+            extraction_time = datetime.now().strftime('%Y%m%d_%H%M%S')
             subfolder_name = f"Extracted_{carrier_filename}_{extraction_time}"
             output_subfolder = os.path.join(output_folder, subfolder_name)
             os.makedirs(output_subfolder, exist_ok=True)
@@ -1522,6 +1556,7 @@ class SteganographyApp:
         self.set_button_state(self.gif_metadata_button, "disabled", operation=True)
         if not self.carrier_gif_path:
             messagebox.showerror("Error", "Select a carrier GIF.")
+            self.root.after(0, lambda: self.update_gif_progress(0))  # Reset progress on error
             self.set_button_state(self.gif_metadata_button, "normal", operation=True)
             return
 
@@ -1529,16 +1564,19 @@ class SteganographyApp:
             current_hash = hashlib.sha256(f.read()).hexdigest()
         if self.carrier_gif_hash != current_hash:
             messagebox.showerror("Error", "Carrier GIF has been modified since loading!")
+            self.root.after(0, lambda: self.update_gif_progress(0))  # Reset progress on error
             self.set_button_state(self.gif_metadata_button, "normal", operation=True)
             return
 
         key_str = self.gif_key_entry.get().strip()
         if not key_str:
             messagebox.showerror("Error", "Please provide a valid encryption key.")
+            self.root.after(0, lambda: self.update_gif_progress(0))  # Reset progress on error
             self.set_button_state(self.gif_metadata_button, "normal", operation=True)
             return
 
         if not self.gif_logic.get_cipher(key_str, self.root):
+            self.root.after(0, lambda: self.update_gif_progress(0))  # Reset progress on error
             self.set_button_state(self.gif_metadata_button, "normal", operation=True)
             return
 
@@ -1582,7 +1620,23 @@ class SteganographyApp:
         gc.collect()
         
 if __name__ == "__main__":
-    root = TkinterDnD.Tk()
-    app = SteganographyApp(root)
+    try:
+        root = TkinterDnD.Tk()
+        app = SteganographyApp(root)
+    except RuntimeError as e:
+        if "tkdnd" in str(e).lower():
+            messagebox.showwarning(
+                "Warning",
+                "Failed to load tkdnd library for drag-and-drop support. Falling back to basic window."
+            )
+            root = ctk.CTk()
+            app = SteganographyApp(root)
+            # Disable drag-and-drop functionality
+            app.image_section.drop_target_register()  # Unregister DND
+            app.data_section.drop_target_register()
+            app.gif_section.drop_target_register()
+            app.gif_data_section.drop_target_register()
+        else:
+            raise e
     root.protocol("WM_DELETE_WINDOW", lambda: [app.cleanup(), root.destroy()])
     root.mainloop()
