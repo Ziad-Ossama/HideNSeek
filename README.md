@@ -52,6 +52,7 @@ HideNSeek/
 └── README.md            # Documentation
 
 ```
+---
 ⚙️ Technologies
 CustomTkinter: For the sleek, modern UI
 Pillow & NumPy: Image processing and manipulation
