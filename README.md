@@ -1,121 +1,288 @@
-🌟 HideNSeek - Steganography Application 🌟
-Hide your secrets in plain sight with style!
-HideNSeek is a sleek, modern Python-based GUI application that brings steganography to life. Embed and extract data in images (PNG, JPG, JPEG) or GIFs with ease, all while enjoying a vibrant, user-friendly interface powered by CustomTkinter. With encryption, drag-and-drop support, and a colorful design, HideNSeek makes data hiding fun and secure! 🎨🔒
 
-🚀 Features
+  
+  HideNSeek
+  
+    A Modern Steganography Application to Hide and Reveal Data in Images and GIFs 🔒
+  
 
-🖼️ Image Steganography: Hide and reveal data in PNG, JPG, or JPEG files using LSB techniques.
-🎞️ GIF Steganography: Embed secrets in GIFs with frame-based steganography.
-🔐 Encryption: Secure your data with Fernet encryption using custom or auto-generated keys.
-🛡️ Authentication: Add optional passwords and author metadata for extra security.
-📂 Drag-and-Drop: Load carrier files and data with a simple drag-and-drop.
-📜 Operation History: Keep track of all your embedding, extraction, and metadata operations.
-⏳ Progress Bars: Watch your tasks progress with vibrant, animated bars and time estimates.
-🌐 Cross-Platform: Runs smoothly on Windows, macOS, and Linux.
-🎨 Modern UI: A colorful, dark-themed interface that’s easy on the eyes.
+  
+    Explore the docs »
+    
+    
+    View Demo
+    ·
+    Report Bug
+    ·
+    Request Feature
+  
+
+  
+    
+    
+    
+    
+    
+  
 
 
-🛠️ Getting Started
+
+Table of Contents
+
+About the Project
+Built With
+
+
+Getting Started
+Prerequisites
+Installation
+
+
+Usage
+Screenshots
+Technical Details
+Roadmap
+Contributing
+License
+Contact
+Acknowledgments
+
+
+About the Project
+HideNSeek is a Python-based steganography application that allows users to hide and extract data within images (PNG, JPG, JPEG) and GIFs. Featuring a modern, dark-themed GUI built with CustomTkinter, HideNSeek combines security, usability, and style. Whether you're concealing sensitive files or exploring steganography, HideNSeek offers a seamless experience with encryption, drag-and-drop support, and detailed operation history.
+Key Features:
+
+🖼️ Image Steganography: Embed and extract data in PNG, JPG, or JPEG files using LSB techniques.
+🎞️ GIF Steganography: Hide data in GIFs with frame-based encoding.
+🔐 Fernet Encryption: Secure your data with symmetric encryption.
+🛡️ Authentication: Add passwords and author metadata.
+📂 Drag-and-Drop: Easily load files via drag-and-drop.
+📜 Operation History: Track all actions in a dedicated tab.
+⏳ Progress Tracking: Animated progress bars with time estimates.
+🌐 Cross-Platform: Works on Windows, macOS, and Linux.
+
+HideNSeek is perfect for users who want to securely share data in plain sight, wrapped in a sleek and intuitive interface.
+Built With
+
+Python
+CustomTkinter
+Pillow
+Cryptography
+TkinterDnD2
+
+
+Getting Started
+Follow these steps to set up HideNSeek on your local machine.
 Prerequisites
 
-🐍 Python 3.8 or higher
-📦 Install dependencies with:pip install customtkinter pillow numpy cryptography tkinterdnd2
-
-
+Python 3.8 or higher: Ensure Python is installed. Download from python.org.
+pip: Python’s package manager (usually included with Python).
 
 Installation
 
-Clone the repo:
+Clone the Repository:
 git clone https://github.com/your-username/hidenseek.git
 cd hidenseek
 
 
-Install dependencies:
+Install Dependencies:
 pip install -r requirements.txt
 
+This installs:
 
-Launch the app:
+customtkinter: For the GUI.
+pillow: For image and GIF processing.
+numpy: For array operations in steganography.
+cryptography: For Fernet encryption.
+tkinterdnd2: For drag-and-drop functionality.
+
+
+Run the Application:
 python main.py
 
+The app will launch in a 900x700px window with a dark-themed interface.
 
 
 
-🎮 How to Use
+Usage
+HideNSeek is designed for ease of use, with a tabbed interface to handle different tasks. Here’s how to use it:
+1. Launch the App
+Run main.py to open the GUI. The sidebar includes four tabs: Image-Stego, GIF-Stego, History, and Help.
+2. Embed Data
 
-Open the App:
-
-Run main.py to dive into the colorful GUI! 🌈
-
-
-Choose Your Mode:
-
-🖼️ Image-Stego: For PNG, JPG, or JPEG files.
-🎞️ GIF-Stego: For GIF files.
-📜 History: Review past operations.
-❓ Help: Get quick tips and instructions.
+Select a Carrier:
+In the Image-Stego or GIF-Stego tab, click Browse Image/GIF or drag-and-drop a carrier file (PNG/JPG/JPEG for Image-Stego, GIF for GIF-Stego).
 
 
-Embed Data:
-
-Drag-and-drop or browse to select a carrier image/GIF.
-Choose up to 20 files to hide.
-Generate or enter an encryption key 🔑.
-(Optional) Add a password and author name.
-Hit Embed Data and save your stego file! 💾
+Choose Data to Hide:
+Click Browse Files or drag-and-drop up to 20 files to embed.
 
 
-Extract Data:
+Set Encryption Key:
+Enter a key or click Generate to create one (automatically copied to clipboard).
 
-Load a stego image/GIF.
-Enter the encryption key and password (if used).
-Click Extract Data and select an output folder.
+
+Add Authentication (Optional):
+Enter a password and author name.
+
+
+Embed:
+Click Embed Data and save the output file (PNG or GIF).
+Monitor the progress bar and estimated time.
+
+
+
+3. Extract Data
+
+Load Stego File:
+Select the stego image/GIF via Browse Image/GIF or drag-and-drop.
+
+
+Enter Key and Password:
+Provide the encryption key and password (if used) from the embedding step.
+
+
+Extract:
+Click Extract Data and choose an output folder.
+Extracted files are saved in a subfolder named Extracted_[carrier-name]_[timestamp].
+
+
+
+4. View Metadata
+
+Load Stego File:
+Select the stego image/GIF.
+
+
+Enter Key and Password:
+Provide the encryption key and password.
 
 
 View Metadata:
-
-Load a stego file.
-Enter the key and password.
-Click View Metadata to see author and timestamp details.
+Click View Metadata to see the embedded author and timestamp.
 
 
 
+5. Check History
 
-📁 Project Structure
+Go to the History tab to view a log of all operations, including timestamps, operation type, and details.
 
-main.py: The heart of the app with the GUI and core logic.
-img.py: Powers image steganography with SteganographyLogic.
-gif.py: Handles GIF steganography with GIFSteganographyLogic.
-history.json: Auto-generated file for operation history.
-requirements.txt: Lists all dependencies.
+For more detailed instructions, click the Help tab in the app.
 
-
-⚠️ Important Notes
-
-🔑 Keep Keys Safe: Store your encryption key and password securely—they’re required for extraction!
-📏 File Size Matters: Ensure your carrier file has enough capacity (check estimated times in the app).
-🛡️ Integrity Checks: SHA-256 hashes ensure your files haven’t been tampered with.
-📉 File Limit: Embed up to 20 files at a time for optimal performance.
+Screenshots
 
 
-🤝 Contributing
-We’d love your help to make HideNSeek even better! Here’s how to contribute:
 
-Fork the repo 🍴.
-Create a feature branch (git checkout -b feature/amazing-feature).
-Commit your changes (git commit -m 'Add amazing feature').
-Push to the branch (git push origin feature/amazing-feature).
-Open a pull request 🚀.
+Image-Stego Tab
+GIF-Stego Tab
+History Tab
 
 
-📜 License
-This project is licensed under the MIT License. See the LICENSE file for details.
-
-🙌 Acknowledgments
-
-🎨 CustomTkinter for the stunning GUI.
-🖼️ Pillow for powerful image processing.
-🔒 Cryptography for secure encryption.
-🌟 Inspired by the art of steganography and modern design trends.
 
 
-Hide your data with flair and uncover it with ease—HideNSeek has you covered! 😎
+
+
+
+
+Embed and extract data in images.
+Hide files in GIFs with ease.
+Track your operation history.
+
+
+
+  
+  Watch HideNSeek in action—embedding and extracting data seamlessly!
+
+
+
+Technical Details
+Steganography Techniques
+
+Image Steganography:
+Uses Least Significant Bit (LSB) encoding to hide data in pixel values.
+Minimizes visual distortion by altering only the least significant bits.
+
+
+GIF Steganography:
+Embeds data across GIF frames, leveraging frame-based encoding.
+Preserves GIF animation functionality.
+
+
+
+Security Features
+
+Encryption:
+Uses Fernet (symmetric encryption) from the cryptography library.
+Requires a key for both embedding and extraction.
+
+
+Authentication:
+Optional password protection and author metadata.
+
+
+Integrity Checks:
+Computes SHA-256 hashes to detect tampering.
+
+
+
+Performance
+
+Threading: Handles long tasks (embedding/extraction) in separate threads to keep the GUI responsive.
+Progress Tracking: Displays real-time progress with animated bars and time estimates.
+Memory Management: Implements cleanup methods and garbage collection to free resources.
+
+UI Design
+
+Built with CustomTkinter.
+Dark theme with green buttons (#4CAF50, hover: #388E3C).
+Fixed window size (900x700px), non-resizable.
+Sidebar navigation with tabbed content.
+
+Project Structure
+
+main.py: Core app with GUI and logic.
+img.py: SteganographyLogic for image steganography.
+gif.py: GIFSteganographyLogic for GIF steganography.
+history.json: Stores operation history.
+assets/: Contains screenshots and demo GIFs.
+requirements.txt: Lists dependencies.
+
+
+Roadmap
+
+ Support for additional file formats (e.g., BMP, MP4).
+ Batch processing for embedding multiple carriers.
+ Advanced encryption options (e.g., AES-256).
+ UI themes and customization.
+ Integration with cloud storage for saving stego files.
+
+See the open issues for a full list of proposed features and known bugs.
+
+Contributing
+Contributions are welcome! To contribute:
+
+Fork the Project 🍴.
+Create your Feature Branch (git checkout -b feature/AmazingFeature).
+Commit your Changes (git commit -m 'Add some AmazingFeature').
+Push to the Branch (git push origin feature/AmazingFeature).
+Open a Pull Request 🚀.
+
+Please ensure your code is well-documented and follows the project’s style.
+
+License
+Distributed under the MIT License. See LICENSE for more information.
+
+Contact
+Your Name - your-email@example.com
+Project Link: https://github.com/your-username/hidenseek
+
+Acknowledgments
+
+CustomTkinter
+Pillow
+Cryptography
+TkinterDnD2
+Inspired by Best-README-Template
+
+
+
+  HideNSeek: Securely hide your data with style! ⭐ Give us a star on GitHub to support the project! ⭐
