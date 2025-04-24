@@ -39,7 +39,7 @@ Digital Watermarking: Protect your intellectual property by embedding ownership 
 Backup Critical Data: Store important credentials within ordinary-looking media files
 Privacy Protection: Keep your personal information hidden from prying eyes
 
-##🧩 Project Structure
+##🧩 ## Project Structure
 ```
 HideNSeek/
 ├── assets/              # Screenshots and demo materials
