@@ -1,121 +1,153 @@
-🌟 HideNSeek - Steganography Application 🌟
-Hide your secrets in plain sight with style!
-HideNSeek is a sleek, modern Python-based GUI application that brings steganography to life. Embed and extract data in images (PNG, JPG, JPEG) or GIFs with ease, all while enjoying a vibrant, user-friendly interface powered by CustomTkinter. With encryption, drag-and-drop support, and a colorful design, HideNSeek makes data hiding fun and secure! 🎨🔒
+HideNSeek - Steganography Application
+Table of Contents
 
-🚀 Features
-
-🖼️ Image Steganography: Hide and reveal data in PNG, JPG, or JPEG files using LSB techniques.
-🎞️ GIF Steganography: Embed secrets in GIFs with frame-based steganography.
-🔐 Encryption: Secure your data with Fernet encryption using custom or auto-generated keys.
-🛡️ Authentication: Add optional passwords and author metadata for extra security.
-📂 Drag-and-Drop: Load carrier files and data with a simple drag-and-drop.
-📜 Operation History: Keep track of all your embedding, extraction, and metadata operations.
-⏳ Progress Bars: Watch your tasks progress with vibrant, animated bars and time estimates.
-🌐 Cross-Platform: Runs smoothly on Windows, macOS, and Linux.
-🎨 Modern UI: A colorful, dark-themed interface that’s easy on the eyes.
+Project Overview
+Key Objectives
 
 
-🛠️ Getting Started
+Project Structure
+Why Projects Like This Should Be Implemented
+Stages and Technologies Used
+Stage 1: Core Development
+Stage 2: Steganography Logic
+Stage 3: Security Implementation
+Stage 4: GUI Development
+Stage 5: Testing
+Stage 6: Deployment
+
+
+Installation and Prerequisites
 Prerequisites
 
-🐍 Python 3.8 or higher
-📦 Install dependencies with:pip install customtkinter pillow numpy cryptography tkinterdnd2
+
+References
+
+
+Project Overview
+HideNSeek is a Python-based steganography application designed to securely hide and extract data within images (PNG, JPG, JPEG) and GIFs. It features a modern, dark-themed GUI built with CustomTkinter, offering an intuitive user experience for embedding, extracting, and viewing metadata. The application integrates Fernet encryption for security, drag-and-drop functionality for ease of use, and operation history tracking, making it a powerful tool for concealing sensitive data in plain sight.
+Key Objectives:
+
+Develop a user-friendly steganography tool for images and GIFs.
+Implement secure data embedding with encryption and authentication.
+Provide a modern GUI with drag-and-drop support and progress tracking.
+Ensure cross-platform compatibility (Windows, macOS, Linux).
+Document the project for easy setup and usage.
+
+
+Project Structure
+HideNSeek/
+│
+├── assets/                           # Directory for README images and demo GIFs
+│   └── image-stego.png               # Screenshot of the Image-Stego tab
+│   └── gif-stego.png                 # Screenshot of the GIF-Stego tab
+│   └── history-tab.png               # Screenshot of the History tab
+│   └── demo.gif                      # Demo GIF showing app functionality
+│
+├── src/                              # Source code directory
+│   └── main.py                       # Main script with GUI and core logic
+│   └── img.py                        # Logic for image steganography (SteganographyLogic)
+│   └── gif.py                        # Logic for GIF steganography (GIFSteganographyLogic)
+│
+├── history.json                      # File to store operation history
+│
+├── requirements.txt                  # List of Python dependencies
+│
+├── README.md                         # Project documentation (this file)
+│
+└── LICENSE                           # MIT License file
+
+
+Why Projects Like This Should Be Implemented
+
+Enhanced Security: Steganography provides an additional layer of security by hiding data within media files, making it ideal for secure communication.
+User Accessibility: A GUI-based tool makes steganography accessible to non-technical users, broadening its practical applications.
+Educational Value: Projects like HideNSeek offer hands-on experience with encryption, image processing, and GUI development, fostering learning in cybersecurity and software engineering.
+Cross-Platform Utility: Supporting multiple platforms ensures wider usability, catering to diverse user needs.
+
+
+Stages and Technologies Used
+Stage 1: Core Development
+
+Tool/Technology: Python
+Description: Developed the foundational structure of the application, including file handling and basic logic for data embedding and extraction.
+
+Stage 2: Steganography Logic
+
+Tool/Technology: Pillow, NumPy
+Description: Implemented steganography logic for images (LSB technique) and GIFs (frame-based encoding) using Pillow for image processing and NumPy for efficient array operations.
+
+
+Stage 3: Security Implementation
+
+Tool/Technology: Cryptography
+Description: Integrated Fernet encryption for securing data before embedding, along with SHA-256 hashing for integrity checks and optional password authentication.
+
+Stage 4: GUI Development
+
+Tool/Technology: CustomTkinter, TkinterDnD2
+Description: Designed a modern, dark-themed GUI with CustomTkinter, featuring tabs for Image-Stego, GIF-Stego, History, and Help, and added drag-and-drop support using TkinterDnD2.
 
 
 
-Installation
+Stage 5: Testing
 
-Clone the repo:
+Tool/Technology: Manual Testing
+Description: Conducted tests to ensure embedding, extraction, and metadata viewing worked correctly across different file formats and platforms, verifying integrity checks and encryption.
+
+Stage 6: Deployment
+
+Tool/Technology: PyInstaller (Optional)
+Description: Packaged the application for distribution using PyInstaller, creating executables for Windows, macOS, and Linux to simplify deployment for end users.
+
+
+
+Installation and Prerequisites
+Prerequisites
+
+Python 3.8+: Download from python.org.
+pip: Ensure it’s installed (comes with Python).
+tkdnd (for TkinterDnD2):
+Windows/macOS: Download from SourceForge, extract, and place in your project directory.
+Linux: Install via package manager:sudo apt-get install tkdnd
+
+
+
+
+
+Installation Steps
+
+Clone the Repository:
 git clone https://github.com/your-username/hidenseek.git
 cd hidenseek
 
 
-Install dependencies:
-pip install -r requirements.txt
+Install Dependencies:
+
+Use the provided requirements.txt:pip install -r requirements.txt
 
 
-Launch the app:
-python main.py
-
-
-
-
-🎮 How to Use
-
-Open the App:
-
-Run main.py to dive into the colorful GUI! 🌈
-
-
-Choose Your Mode:
-
-🖼️ Image-Stego: For PNG, JPG, or JPEG files.
-🎞️ GIF-Stego: For GIF files.
-📜 History: Review past operations.
-❓ Help: Get quick tips and instructions.
-
-
-Embed Data:
-
-Drag-and-drop or browse to select a carrier image/GIF.
-Choose up to 20 files to hide.
-Generate or enter an encryption key 🔑.
-(Optional) Add a password and author name.
-Hit Embed Data and save your stego file! 💾
-
-
-Extract Data:
-
-Load a stego image/GIF.
-Enter the encryption key and password (if used).
-Click Extract Data and select an output folder.
-
-
-View Metadata:
-
-Load a stego file.
-Enter the key and password.
-Click View Metadata to see author and timestamp details.
+This installs:
+customtkinter==5.2.2
+Pillow==10.3.0
+numpy==1.26.4
+cryptography==42.0.5
+pyperclip==1.8.2
+tkinterdnd2==0.3.0
 
 
 
 
-📁 Project Structure
-
-main.py: The heart of the app with the GUI and core logic.
-img.py: Powers image steganography with SteganographyLogic.
-gif.py: Handles GIF steganography with GIFSteganographyLogic.
-history.json: Auto-generated file for operation history.
-requirements.txt: Lists all dependencies.
+Run the Application:
+python src/main.py
 
 
-⚠️ Important Notes
-
-🔑 Keep Keys Safe: Store your encryption key and password securely—they’re required for extraction!
-📏 File Size Matters: Ensure your carrier file has enough capacity (check estimated times in the app).
-🛡️ Integrity Checks: SHA-256 hashes ensure your files haven’t been tampered with.
-📉 File Limit: Embed up to 20 files at a time for optimal performance.
 
 
-🤝 Contributing
-We’d love your help to make HideNSeek even better! Here’s how to contribute:
+References
 
-Fork the repo 🍴.
-Create a feature branch (git checkout -b feature/amazing-feature).
-Commit your changes (git commit -m 'Add amazing feature').
-Push to the branch (git push origin feature/amazing-feature).
-Open a pull request 🚀.
+CustomTkinter Documentation: GitHub Repository
+Pillow Documentation: Official Site
+Cryptography Library: Official Documentation
+TkinterDnD2 Guide: GitHub Repository
+PyInstaller Setup: Official Documentation
 
-
-📜 License
-This project is licensed under the MIT License. See the LICENSE file for details.
-
-🙌 Acknowledgments
-
-🎨 CustomTkinter for the stunning GUI.
-🖼️ Pillow for powerful image processing.
-🔒 Cryptography for secure encryption.
-🌟 Inspired by the art of steganography and modern design trends.
-
-
-Hide your data with flair and uncover it with ease—HideNSeek has you covered! 😎
