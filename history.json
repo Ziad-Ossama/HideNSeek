@@ -88,5 +88,275 @@
         "timestamp": "2025-04-25 04:18:55",
         "operation": "View Metadata",
         "details": "Viewed metadata from C:/Users/Ziad/Desktop/71.png (Image-Stego)"
+    },
+    {
+        "timestamp": "2025-04-25 05:09:10",
+        "operation": "Key Generation",
+        "details": "Generated a new encryption key for Image-Stego."
+    },
+    {
+        "timestamp": "2025-04-25 05:10:30",
+        "operation": "Embed",
+        "details": "Embedded 2 files into C:/Users/Ziad/Desktop/72.png (Image-Stego)"
+    },
+    {
+        "timestamp": "2025-04-25 05:13:14",
+        "operation": "Key Generation",
+        "details": "Generated a new encryption key for GIF-Stego."
+    },
+    {
+        "timestamp": "2025-04-25 05:18:48",
+        "operation": "Key Generation",
+        "details": "Generated a new encryption key for GIF-Stego."
+    },
+    {
+        "timestamp": "2025-04-25 05:22:34",
+        "operation": "Key Generation",
+        "details": "Generated a new encryption key for GIF-Stego."
+    },
+    {
+        "timestamp": "2025-04-25 05:33:38",
+        "operation": "Key Generation",
+        "details": "Generated a new encryption key for Image-Stego."
+    },
+    {
+        "timestamp": "2025-04-25 05:38:35",
+        "operation": "Key Generation",
+        "details": "Generated a new encryption key for Image-Stego."
+    },
+    {
+        "timestamp": "2025-04-25 05:40:52",
+        "operation": "Embed",
+        "details": "Embedded 2 files into C:/Users/Ziad/Desktop/73.png (Image-Stego)"
+    },
+    {
+        "timestamp": "2025-04-25 05:43:28",
+        "operation": "Extract",
+        "details": "Extracted 2 files from C:/Users/Ziad/Desktop/73.png to C:/Users/Ziad/Desktop\\Extracted_73_20250425_054328 (Image-Stego)"
+    },
+    {
+        "timestamp": "2025-04-25 05:44:12",
+        "operation": "Extract",
+        "details": "Extracted 2 files from C:/Users/Ziad/Desktop/73.png to C:/Users/Ziad/Desktop\\Extracted_73_20250425_054412 (Image-Stego)"
+    },
+    {
+        "timestamp": "2025-04-25 05:53:29",
+        "operation": "Key Generation",
+        "details": "Generated a new encryption key for Image-Stego."
+    },
+    {
+        "timestamp": "2025-04-25 05:53:48",
+        "operation": "Embed",
+        "details": "Embedded 3 files into C:/Users/Ziad/Desktop/74.png (Image-Stego)"
+    },
+    {
+        "timestamp": "2025-04-25 05:54:07",
+        "operation": "Extract",
+        "details": "Extracted 3 files from C:/Users/Ziad/Desktop/74.png to C:/Users/Ziad/Desktop\\Extracted_74_20250425_055407 (Image-Stego)"
+    },
+    {
+        "timestamp": "2025-04-25 06:18:57",
+        "operation": "Key Generation",
+        "details": "Generated a new encryption key for GIF-Stego."
+    },
+    {
+        "timestamp": "2025-04-25 06:23:47",
+        "operation": "Embed",
+        "details": "Embedded 18 files into C:/Users/Ziad/Desktop/75.png (Image-Stego)"
+    },
+    {
+        "timestamp": "2025-04-25 06:24:02",
+        "operation": "Embed",
+        "details": "Embedded 18 files into C:/Users/Ziad/Desktop/76.gif (GIF-Stego)"
+    },
+    {
+        "timestamp": "2025-04-25 06:27:51",
+        "operation": "Extract",
+        "details": "Extracted 18 files from C:/Users/Ziad/Desktop/75.png to C:/Users/Ziad/Desktop\\Extracted_75_20250425_062751 (Image-Stego)"
+    },
+    {
+        "timestamp": "2025-04-25 06:35:52",
+        "operation": "Key Generation",
+        "details": "Generated a new encryption key for Image-Stego."
+    },
+    {
+        "timestamp": "2025-04-25 06:37:04",
+        "operation": "Embed",
+        "details": "Embedded 18 files into C:/Users/Ziad/Desktop/77.png (Image-Stego)"
+    },
+    {
+        "timestamp": "2025-04-25 06:45:35",
+        "operation": "Extract",
+        "details": "Extracted 18 files from C:/Users/Ziad/Desktop/77.png to C:/Users/Ziad/Desktop\\Extracted_77_20250425_064535 (Image-Stego)"
+    },
+    {
+        "timestamp": "2025-04-25 06:57:20",
+        "operation": "Key Generation",
+        "details": "Generated a new encryption key for Image-Stego."
+    },
+    {
+        "timestamp": "2025-04-25 06:57:23",
+        "operation": "Key Generation",
+        "details": "Generated a new encryption key for Image-Stego."
+    },
+    {
+        "timestamp": "2025-04-25 06:57:37",
+        "operation": "Key Generation",
+        "details": "Generated a new encryption key for GIF-Stego."
+    },
+    {
+        "timestamp": "2025-04-25 07:00:22",
+        "operation": "Key Generation",
+        "details": "Generated a new encryption key for Image-Stego."
+    },
+    {
+        "timestamp": "2025-04-25 07:00:57",
+        "operation": "Key Generation",
+        "details": "Generated a new encryption key for Image-Stego."
+    },
+    {
+        "timestamp": "2025-04-25 07:08:21",
+        "operation": "Key Generation",
+        "details": "Generated a new encryption key for Image-Stego."
+    },
+    {
+        "timestamp": "2025-04-25 07:10:01",
+        "operation": "Embed",
+        "details": "Embedded 18 files into C:/Users/Ziad/Desktop/78.png (Image-Stego)"
+    },
+    {
+        "timestamp": "2025-04-25 07:11:13",
+        "operation": "Extract",
+        "details": "Extracted 18 files from C:/Users/Ziad/Desktop/78.png to C:/Users/Ziad/Desktop\\Extracted_78_20250425_071113 (Image-Stego)"
+    },
+    {
+        "timestamp": "2025-04-25 07:12:43",
+        "operation": "Key Generation",
+        "details": "Generated a new encryption key for Image-Stego."
+    },
+    {
+        "timestamp": "2025-04-25 18:07:38",
+        "operation": "Key Generation",
+        "details": "Generated a new encryption key for Image-Stego."
+    },
+    {
+        "timestamp": "2025-04-25 18:08:50",
+        "operation": "Embed",
+        "details": "Embedded 18 files into C:/Users/Ziad/Desktop/79.png (Image-Stego)"
+    },
+    {
+        "timestamp": "2025-04-25 18:18:38",
+        "operation": "Extract",
+        "details": "Extracted 18 files from C:/Users/Ziad/Desktop/79.png to C:/Users/Ziad/Desktop\\Extracted_79_20250425_181838 (Image-Stego)"
+    },
+    {
+        "timestamp": "2025-04-25 18:21:07",
+        "operation": "View Metadata",
+        "details": "Viewed metadata from C:/Users/Ziad/Desktop/79.png (Image-Stego)"
+    },
+    {
+        "timestamp": "2025-04-25 18:30:06",
+        "operation": "Key Generation",
+        "details": "Generated a new encryption key for Image-Stego."
+    },
+    {
+        "timestamp": "2025-04-25 18:31:19",
+        "operation": "Embed",
+        "details": "Embedded 18 files into C:/Users/Ziad/Desktop/80.png (Image-Stego)"
+    },
+    {
+        "timestamp": "2025-04-25 18:31:58",
+        "operation": "Embed",
+        "details": "Embedded 18 files into C:/Users/Ziad/Desktop/81.gif (GIF-Stego)"
+    },
+    {
+        "timestamp": "2025-04-25 18:32:37",
+        "operation": "View Metadata",
+        "details": "Viewed metadata from C:/Users/Ziad/Desktop/81.gif (GIF-Stego)"
+    },
+    {
+        "timestamp": "2025-04-25 18:46:14",
+        "operation": "Key Generation",
+        "details": "Generated a new encryption key for Image-Stego."
+    },
+    {
+        "timestamp": "2025-04-25 18:47:41",
+        "operation": "Embed",
+        "details": "Embedded 18 files into C:/Users/Ziad/Desktop/82.png (Image-Stego)"
+    },
+    {
+        "timestamp": "2025-04-25 18:48:30",
+        "operation": "Embed",
+        "details": "Embedded 18 files into C:/Users/Ziad/Desktop/83.gif (GIF-Stego)"
+    },
+    {
+        "timestamp": "2025-04-25 18:50:56",
+        "operation": "Embed",
+        "details": "Embedded 1 files into C:/Users/Ziad/Desktop/84.png (Image-Stego)"
+    },
+    {
+        "timestamp": "2025-04-25 18:53:02",
+        "operation": "View Metadata",
+        "details": "Viewed metadata from C:/Users/Ziad/Desktop/82.png (Image-Stego)"
+    },
+    {
+        "timestamp": "2025-04-25 18:56:17",
+        "operation": "Key Generation",
+        "details": "Generated a new encryption key for Image-Stego."
+    },
+    {
+        "timestamp": "2025-04-25 19:00:51",
+        "operation": "Embed",
+        "details": "Embedded 18 files into C:/Users/Ziad/Desktop/85.png (Image-Stego)"
+    },
+    {
+        "timestamp": "2025-04-25 19:45:15",
+        "operation": "Key Generation",
+        "details": "Generated a new encryption key for Image-Stego."
+    },
+    {
+        "timestamp": "2025-04-25 19:46:37",
+        "operation": "Embed",
+        "details": "Embedded 18 files into C:/Users/Ziad/Desktop/86.png (Image-Stego)"
+    },
+    {
+        "timestamp": "2025-04-25 20:33:55",
+        "operation": "Key Generation",
+        "details": "Generated a new encryption key for Image-Stego."
+    },
+    {
+        "timestamp": "2025-04-25 20:37:27",
+        "operation": "Key Generation",
+        "details": "Generated a new encryption key for Image-Stego."
+    },
+    {
+        "timestamp": "2025-04-25 20:41:05",
+        "operation": "Key Generation",
+        "details": "Generated a new encryption key for Image-Stego."
+    },
+    {
+        "timestamp": "2025-04-25 20:42:32",
+        "operation": "Embed",
+        "details": "Embedded 18 files into C:/Users/Ziad/Desktop/87.png (Image-Stego)"
+    },
+    {
+        "timestamp": "2025-04-25 20:47:11",
+        "operation": "Embed",
+        "details": "Embedded 1 files into C:/Users/Ziad/Desktop/88.png (Image-Stego)"
+    },
+    {
+        "timestamp": "2025-04-25 20:49:07",
+        "operation": "Embed",
+        "details": "Embedded 1 files into C:/Users/Ziad/Desktop/89.png (Image-Stego)"
+    },
+    {
+        "timestamp": "2025-04-25 20:53:05",
+        "operation": "Embed",
+        "details": "Embedded 1 files into C:/Users/Ziad/Desktop/90.png (Image-Stego)"
+    },
+    {
+        "timestamp": "2025-04-25 21:11:39",
+        "operation": "Embed",
+        "details": "Embedded 1 files into C:/Users/Ziad/Desktop/91.png (Image-Stego)"
     }
 ]
