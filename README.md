@@ -1,5 +1,5 @@
 HideNSeek - Secure Steganography Made Simple
-<div align="center"> <img src="assets/logo.png" alt="HideNSeek Logo" width="200"/> <br> <em>Hide your secrets in plain sight</em> <br><br> </div>
+<div align="center"> <img src="assets/HideNSeek Digital Typography Design-Photoroom.png" alt="HideNSeek Logo" width="200"/> <br> <em>Hide your secrets in plain sight</em> <br><br> </div>
 <img alt="GitHub stars" src="https://img.shields.io/github/stars/your-username/hidenseek?style=social">
 <img alt="License" src="https://img.shields.io/badge/license-MIT-blue">
 <img alt="Version" src="https://img.shields.io/badge/version-1.0.0-brightgreen">
