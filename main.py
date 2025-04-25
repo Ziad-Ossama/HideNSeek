@@ -857,6 +857,11 @@ class SteganographyApp:
             # Truncate to 50 bytes if necessary
             author = author_bytes[:50].decode('utf-8', errors='ignore')
 
+        # Require password for embedding
+        if for_embedding and not password:
+            messagebox.showerror("Error", "Password is required for embedding.")
+            return False, None, None
+
         # If not embedding, ensure password is provided if required
         if not for_embedding and not password:
             messagebox.showerror("Error", "Password is required for extraction if it was set during embedding.")
