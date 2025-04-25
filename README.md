@@ -76,4 +76,4 @@ Open a Pull Request
 📜 License
 This project is licensed under the MIT License - see the LICENSE file for details.
 
-<div align="center"> <p>Made with ❤️ by <a href="https://github.com/your-username">Your Name</a></p> <p>Star ⭐ this repository if you find it useful!</p> </div>
+<div align="center"> <p>Made with ❤️ by <a href="https://github.com/Ziad-Ossama">Ziad Ossama</a></p> <p>Star ⭐ this repository if you find it useful!</p> </div>
