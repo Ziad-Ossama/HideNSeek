@@ -68,5 +68,25 @@
         "timestamp": "2025-04-25 03:01:19",
         "operation": "Embed",
         "details": "Embedded 1 files into C:/Users/Ziad/Desktop/70.png (Image-Stego)"
+    },
+    {
+        "timestamp": "2025-04-25 04:06:07",
+        "operation": "Key Generation",
+        "details": "Generated a new encryption key for Image-Stego."
+    },
+    {
+        "timestamp": "2025-04-25 04:06:15",
+        "operation": "Embed",
+        "details": "Embedded 1 files into C:/Users/Ziad/Desktop/71.png (Image-Stego)"
+    },
+    {
+        "timestamp": "2025-04-25 04:14:08",
+        "operation": "Extract",
+        "details": "Extracted 1 files from C:/Users/Ziad/Desktop/71.png to C:/Users/Ziad/Desktop\\Extracted_71_20250425_041408 (Image-Stego)"
+    },
+    {
+        "timestamp": "2025-04-25 04:18:55",
+        "operation": "View Metadata",
+        "details": "Viewed metadata from C:/Users/Ziad/Desktop/71.png (Image-Stego)"
     }
 ]

@@ -9,3 +9,8 @@
 2025-04-25 02:41:02,205 - ERROR - Embedding failed: Data too large for carrier image. Required: 3856 bits, Available: 300 bits
 2025-04-25 02:41:25,438 - ERROR - Embedding failed: Data too large for carrier image. Required: 3696 bits, Available: 300 bits
 2025-04-25 02:41:33,793 - ERROR - Embedding failed: Data too large for carrier image. Required: 3696 bits, Available: 300 bits
+2025-04-25 04:07:22,682 - ERROR - Extraction failed: broken data stream when reading image file
+2025-04-25 04:13:19,229 - ERROR - Extraction failed: broken data stream when reading image file
+2025-04-25 04:13:43,957 - ERROR - Extraction failed: broken data stream when reading image file
+2025-04-25 04:13:48,365 - ERROR - Extraction failed: broken data stream when reading image file
+2025-04-25 04:19:08,246 - ERROR - Extraction failed: Password mismatch: incorrect password provided
