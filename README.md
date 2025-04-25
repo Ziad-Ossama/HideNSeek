@@ -1,9 +1,8 @@
-HideNSeek - Secure Steganography Made Simple
 <div align="center"> <img src="assets/HideNSeek Digital Typography Design-Photoroom.png" alt="HideNSeek Logo" width="600"/> <br> <em>Hide your secrets in plain sight</em> <br><br> </div>
-<img alt="GitHub stars" src="https://img.shields.io/github/stars/your-username/hidenseek?style=social">
+<div align = "center">
 <img alt="License" src="https://img.shields.io/badge/license-MIT-blue">
-<img alt="Version" src="https://img.shields.io/badge/version-1.0.0-brightgreen">
 <img alt="Python" src="https://img.shields.io/badge/python-3.8+-yellow">
+</div>
 ✨ Features
 Dual Steganography Support: Hide data in both static images (PNG, JPG) and animated GIFs
 Military-Grade Encryption: Secure your embedded data with Fernet symmetric encryption
