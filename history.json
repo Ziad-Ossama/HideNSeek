@@ -28,5 +28,45 @@
         "timestamp": "2025-04-24 20:17:32",
         "operation": "Embed",
         "details": "Embedded 1 files into C:/Users/Ziad/Desktop/64.gif (GIF-Stego)"
+    },
+    {
+        "timestamp": "2025-04-25 01:56:12",
+        "operation": "Key Generation",
+        "details": "Generated a new encryption key for Image-Stego."
+    },
+    {
+        "timestamp": "2025-04-25 01:56:33",
+        "operation": "Embed",
+        "details": "Embedded 1 files into C:/Users/Ziad/Desktop/67.png (Image-Stego)"
+    },
+    {
+        "timestamp": "2025-04-25 02:23:25",
+        "operation": "Key Generation",
+        "details": "Generated a new encryption key for Image-Stego."
+    },
+    {
+        "timestamp": "2025-04-25 02:23:36",
+        "operation": "Embed",
+        "details": "Embedded 1 files into C:/Users/Ziad/Desktop/68.png (Image-Stego)"
+    },
+    {
+        "timestamp": "2025-04-25 02:41:00",
+        "operation": "Key Generation",
+        "details": "Generated a new encryption key for Image-Stego."
+    },
+    {
+        "timestamp": "2025-04-25 02:43:22",
+        "operation": "Embed",
+        "details": "Embedded 1 files into C:/Users/Ziad/Desktop/69.png (Image-Stego)"
+    },
+    {
+        "timestamp": "2025-04-25 03:01:09",
+        "operation": "Key Generation",
+        "details": "Generated a new encryption key for Image-Stego."
+    },
+    {
+        "timestamp": "2025-04-25 03:01:19",
+        "operation": "Embed",
+        "details": "Embedded 1 files into C:/Users/Ziad/Desktop/70.png (Image-Stego)"
     }
 ]

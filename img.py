@@ -62,7 +62,7 @@ class SteganographyLogic:
         """Derive a 32-byte hash from the password using PBKDF2HMAC."""
         if not password:
             return b'\x00' * 32
-        salt = b'steganography_salt'
+        salt = b'P673XfybNqgEm9PPBDtoP4CFqroTHRjG.vE94hDftUGXK.AkjHqp-yqmh2DAi3@4D-ewUu@xp_GC7eqegGVXz4MYECgH-8vCumU*'
         kdf = PBKDF2HMAC(algorithm=hashes.SHA256(), length=32, salt=salt, iterations=100000)
         return kdf.derive(password.encode('utf-8'))
 

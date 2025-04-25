@@ -57,7 +57,7 @@ class GIFSteganographyLogic:
             kdf = PBKDF2HMAC(
                 algorithm=hashes.SHA256(),
                 length=32,
-                salt=b"hmac_salt",
+                salt=b"YrLgT7hpEq2bYw!!7WC9tW8ogVVLhowXv9-iko4MghAuXixm34d6TdtYRA*9ZWiLi7aLWLNw77uEMAoCPZZVd3Y*RT7no_7@pYHm",
                 iterations=100000,
             )
             self.hmac_key = kdf.derive(self.key)
@@ -73,7 +73,7 @@ class GIFSteganographyLogic:
         kdf = PBKDF2HMAC(
                 algorithm=hashes.SHA256(),
                 length=16,
-                salt=b"password_salt",
+                salt=b"22CbooBo3_@NK8c@yGZJ2MRq6t@MhxvhY!x6-4*gsHQbUiY.fjmkK7bHM6FH.L4kQU7deTsJBLmYrsJFsgMw4PetJ_DuURi2R!kY",
                 iterations=100000,
             )
         return kdf.derive(password.encode() if password else b"")
