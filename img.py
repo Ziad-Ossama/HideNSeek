@@ -61,7 +61,7 @@ class SteganographyLogic:
     def derive_password_hash(self, password):
         """Derive a 32-byte hash from the password using PBKDF2HMAC."""
         if not password:
-            raise ValueError("Password is required for embedding and extraction")
+            return b'\x00' * 32
         salt = b'P673XfybNqgEm9PPBDtoP4CFqroTHRjG.vE94hDftUGXK.AkjHqp-yqmh2DAi3@4D-ewUu@xp_GC7eqegGVXz4MYECgH-8vCumU*'
         kdf = PBKDF2HMAC(algorithm=hashes.SHA256(), length=32, salt=salt, iterations=100000)
         return kdf.derive(password.encode('utf-8'))
@@ -86,8 +86,6 @@ class SteganographyLogic:
         """Embed multiple files into an image."""
         if not self.get_cipher(key_str):
             raise ValueError("Invalid encryption key")
-        if not password:
-            raise ValueError("Password is required for embedding")
         if len(data_file_paths) > self.MAX_FILES_EMBED:
             raise ValueError(f"Cannot embed more than {self.MAX_FILES_EMBED} files")
         if not os.path.exists(image_path):

@@ -1147,3 +1147,16 @@
 2025-04-26 02:36:36,504 - INFO - Parsed hidden data length: 80508 bytes, Available: 80508 bytes
 2025-04-26 02:36:36,504 - INFO - Extracted file count: 1
 2025-04-26 02:36:36,506 - INFO - Metadata type after decryption: <class 'bytes'>
+2025-04-26 02:53:17,099 - ERROR - Embedding failed: Data too large for carrier image. Required: 101050992 bits, Available: 2205000 bits
+2025-04-26 03:33:49,655 - INFO - GIF part size: 268680 bytes
+2025-04-26 03:33:49,840 - INFO - Hidden data size: 7776140 bytes
+2025-04-26 03:33:49,841 - INFO - Total output size: 8044824 bytes
+2025-04-26 03:44:20,771 - INFO - GIF part size: 268680 bytes
+2025-04-26 03:44:20,819 - INFO - Hidden data size: 1608912 bytes
+2025-04-26 03:44:20,819 - INFO - Total output size: 1877596 bytes
+2025-04-26 03:48:27,526 - INFO - GIF part size: 268680 bytes
+2025-04-26 03:48:27,528 - INFO - Hidden data size: 80508 bytes
+2025-04-26 03:48:27,528 - INFO - Total output size: 349192 bytes
+2025-04-26 03:52:30,630 - INFO - GIF part size: 268680 bytes
+2025-04-26 03:52:30,633 - INFO - Hidden data size: 70972 bytes
+2025-04-26 03:52:30,633 - INFO - Total output size: 339656 bytes

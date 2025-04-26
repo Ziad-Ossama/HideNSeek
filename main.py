@@ -270,18 +270,33 @@ class SteganographyApp:
         self.data_section.dnd_bind('<<Drop>>', self.drop_data_file)
         
         self.key_section = ctk.CTkFrame(scrollable_frame, corner_radius=10)
-        self.key_section.pack(fill="x", pady=5 )
+        self.key_section.pack(fill="x", pady=5)
 
         ctk.CTkLabel(self.key_section, text="Encryption Key", font=main_font).pack(pady=(10, 10))
+        
         self.generate_key_frame = ctk.CTkFrame(self.key_section, fg_color="transparent")
         self.generate_key_frame.pack(pady=2)
-        self.key_entry = ctk.CTkEntry(self.generate_key_frame, width=300, placeholder_text="Enter or generate a key" , font=("Helvetica", 14, "normal") , state = "disabled")
+        
+        self.key_entry = ctk.CTkEntry(
+            self.generate_key_frame, 
+            width=300, 
+            placeholder_text="Enter or generate a key",
+            font=("Helvetica", 14, "normal"),
+            state="disabled"
+        )
         self.key_entry.pack(pady=(0, button_pady))
+        
         self.generate_key_button = ctk.CTkButton(
-            self.generate_key_frame, text="Generate", command=self.generate_key,
-            corner_radius=8, fg_color="#4CAF50", hover_color="#388E3C", width=button_width , 
-            font=("Helvetica", button_size , "bold" ) , state = "disabled" ,
-            text_color_disabled="#8fbf8f",
+            self.generate_key_frame,
+            text="Generate",
+            command=self.generate_key,
+            corner_radius=8,
+            fg_color="#4CAF50",
+            hover_color="#388E3C",
+            width=button_width,
+            font=("Helvetica", button_size, "bold"),
+            state="disabled",
+            text_color_disabled="#8fbf8f"
         )
         self.generate_key_button.pack(pady=(button_pady, button_pady))
         self.estimates_label = ctk.CTkLabel(
@@ -408,15 +423,25 @@ class SteganographyApp:
         self.gif_generate_key_frame = ctk.CTkFrame(self.gif_key_section, fg_color="transparent")
         self.gif_generate_key_frame.pack(pady=2)
         
-        self.gif_key_entry = ctk.CTkEntry(self.gif_generate_key_frame, width=300, 
-                                        placeholder_text="Enter or generate a key", 
-                                        font=("Helvetica", 14, "normal") , state="disabled")
+        self.gif_key_entry = ctk.CTkEntry(
+            self.gif_generate_key_frame,
+            width=300,
+            placeholder_text="Enter or generate a key",
+            font=("Helvetica", 14, "normal"),
+            state="disabled"
+        )
         self.gif_key_entry.pack(pady=(0, button_pady))
         
         self.gif_generate_key_button = ctk.CTkButton(
-            self.gif_generate_key_frame, text="Generate", command=self.generate_gif_key,
-            corner_radius=8, fg_color="#4CAF50", hover_color="#388E3C", width=button_width,
-            font=("Helvetica", button_size, "bold"), state="disabled",
+            self.gif_generate_key_frame,
+            text="Generate",
+            command=self.generate_gif_key,
+            corner_radius=8,
+            fg_color="#4CAF50",
+            hover_color="#388E3C",
+            width=button_width,
+            font=("Helvetica", button_size, "bold"),
+            state="disabled",
             text_color_disabled="#8fbf8f"
         )
         self.gif_generate_key_button.pack(pady=(button_pady, button_pady))
@@ -897,19 +922,19 @@ class SteganographyApp:
             return
 
         if not file_path:
-            self.carrier_image_path = filedialog.askopenfilename(filetypes=[("Image files", "*.png *.jpg *.jpeg")])
+            new_path = filedialog.askopenfilename(filetypes=[("Image files", "*.png *.jpg *.jpeg")])
+            # If user cancels, reset everything
+            if not new_path:
+                self.reset_fields()
+                return
+            self.carrier_image_path = new_path
         else:
             self.carrier_image_path = file_path
-            print(f"Carrier image path: {self.carrier_image_path}")
 
-        if self.carrier_image_path:
-            self.carrier_image_status.configure(text="Loading...", text_color="yellow")
-            self.load_image_button.configure(state="disabled")
-            threading.Thread(target=self._load_carrier_image, daemon=True).start()
-        else:
-            self.carrier_image_path = None
-            self.carrier_image_status.configure(text="No image selected", text_color="red")
-            self.update_estimated_times()
+        print(f"Carrier image path: {self.carrier_image_path}")
+        self.carrier_image_status.configure(text="Loading...", text_color="yellow")
+        self.load_image_button.configure(state="disabled")
+        threading.Thread(target=self._load_carrier_image, daemon=True).start()
 
     def _load_carrier_image(self):
         """Load the carrier image and compute its hash."""
@@ -1033,23 +1058,25 @@ class SteganographyApp:
             return
 
         if not file_path:
-            self.carrier_gif_path = filedialog.askopenfilename(filetypes=[("GIF files", "*.gif")])
+            new_path = filedialog.askopenfilename(filetypes=[("GIF files", "*.gif")])
+            # If user cancels, reset everything
+            if not new_path:
+                self.reset_gif_fields()
+                return
+            self.carrier_gif_path = new_path
         else:
             self.carrier_gif_path = file_path
 
-        if self.carrier_gif_path:
-            if not self.validate_gif(self.carrier_gif_path):
-                messagebox.showerror("Error", "Invalid GIF format!")
-                self.carrier_gif_path = None
-                self.carrier_gif_status.configure(text="No GIF selected", text_color="red")
-                self.update_estimated_times()
-                return
-            self.carrier_gif_status.configure(text="Loading...", text_color="yellow")
-            self.load_gif_button.configure(state="disabled")
-            threading.Thread(target=self._load_carrier_gif, daemon=True).start()
-        else:
+        if not self.validate_gif(self.carrier_gif_path):
+            messagebox.showerror("Error", "Invalid GIF format!")
+            self.carrier_gif_path = None
             self.carrier_gif_status.configure(text="No GIF selected", text_color="red")
             self.update_estimated_times()
+            return
+
+        self.carrier_gif_status.configure(text="Loading...", text_color="yellow")
+        self.load_gif_button.configure(state="disabled")
+        threading.Thread(target=self._load_carrier_gif, daemon=True).start()
 
     def _load_carrier_gif(self):
         """Load the carrier GIF and compute its hash."""
@@ -1148,44 +1175,156 @@ class SteganographyApp:
 
     def reset_fields(self):
         """Reset all fields to their initial state for image stego."""
+        # Reset data paths and states
         self.carrier_image_path = None
         self.data_file_path = None
         self.stego_image = None
         self.carrier_image_hash = None
-        self.carrier_image_status.configure(text="No image selected", text_color="red")
-        self.data_file_status.configure(text="No files selected", text_color="red")
+        
+        # Reset progress bar
         self.progress.set(0)
         self.progress_label.configure(text="Progress: 0%")
+        self.root.update_idletasks()
+        
+        # Reset status labels to initial state
+        self.carrier_image_status.configure(text="No image selected", text_color="red")
+        self.data_file_status.configure(text="No files selected", text_color="red")
+        
+        # Reset estimates
         self.estimates_visible = False
         self.estimates_label.pack_forget()
         
-        # Disable all action buttons when fields are reset
-        self.embed_button.configure(state="disabled")
-        self.extract_button.configure(state="disabled")
-        self.metadata_button.configure(state="disabled")
-        self.generate_key_button.configure(state="disabled")
+        # Clear and disable all input fields with proper initial state
+        self.key_entry.delete(0, "end")
+        self.key_entry.configure(
+            state="disabled",
+            placeholder_text="Enter or generate a key",
+            fg_color="#2b2b2b",
+            bg_color="#2b2b2b",
+            text_color="gray70",
+            placeholder_text_color="gray52"
+        )
         
-        self.update_estimated_times()
+        self.password_entry.delete(0, "end")
+        self.password_entry.configure(
+            state="disabled",
+            placeholder_text="Enter password (optional)",
+            fg_color="#2b2b2b",
+            bg_color="#2b2b2b",
+            text_color="gray70",
+            placeholder_text_color="gray52",
+            show="*"  # Ensure password masking is set
+        )
+        
+        self.author_entry.delete(0, "end")
+        self.author_entry.configure(
+            state="disabled",
+            placeholder_text="Enter author name (optional)",
+            fg_color="#2b2b2b",
+            bg_color="#2b2b2b",
+            text_color="gray70",
+            placeholder_text_color="gray52"
+        )
+        
+        # Disable all action buttons and reset their appearance
+        self.embed_button.configure(
+            state="disabled",
+            text_color_disabled="#8fbf8f"
+        )
+        self.extract_button.configure(
+            state="disabled",
+            text_color_disabled="#8fbf8f"
+        )
+        self.metadata_button.configure(
+            state="disabled",
+            text_color_disabled="#8fbf8f"
+        )
+        self.generate_key_button.configure(
+            state="disabled",
+            text_color_disabled="#8fbf8f"
+        )
+        
+        # Enable the browse button
+        self.load_image_button.configure(state="normal")
+        
+        # Final UI update
+        self.root.update_idletasks()
 
     def reset_gif_fields(self):
         """Reset all fields to their initial state for GIF stego."""
+        # Reset data paths and states
         self.carrier_gif_path = None
         self.gif_data_file_path = None
         self.carrier_gif_hash = None
-        self.carrier_gif_status.configure(text="No GIF selected", text_color="red")
-        self.gif_data_file_status.configure(text="No files selected", text_color="red")
+        
+        # Reset progress bar
         self.gif_progress.set(0)
         self.gif_progress_label.configure(text="Progress: 0%")
+        self.root.update_idletasks()
+        
+        # Reset status labels to initial state
+        self.carrier_gif_status.configure(text="No GIF selected", text_color="red")
+        self.gif_data_file_status.configure(text="No files selected", text_color="red")
+        
+        # Reset estimates
         self.estimates_visible = False
         self.gif_estimates_label.pack_forget()
         
-        # Disable all action buttons when fields are reset
-        self.gif_embed_button.configure(state="disabled")
-        self.gif_extract_button.configure(state="disabled")
-        self.gif_metadata_button.configure(state="disabled")
-        self.gif_generate_key_button.configure(state="disabled")
+        # Clear and disable all input fields with proper initial state
+        self.gif_key_entry.delete(0, "end")
+        self.gif_key_entry.configure(
+            state="disabled",
+            placeholder_text="Enter or generate a key",
+            fg_color="#2b2b2b",
+            bg_color="#2b2b2b",
+            text_color="gray70",
+            placeholder_text_color="gray52"
+        )
         
-        self.update_estimated_times()
+        self.gif_password_entry.delete(0, "end")
+        self.gif_password_entry.configure(
+            state="disabled",
+            placeholder_text="Enter password (optional)",
+            fg_color="#2b2b2b",
+            bg_color="#2b2b2b",
+            text_color="gray70",
+            placeholder_text_color="gray52",
+            show="*"  # Ensure password masking is set
+        )
+        
+        self.gif_author_entry.delete(0, "end")
+        self.gif_author_entry.configure(
+            state="disabled",
+            placeholder_text="Enter author name (optional)",
+            fg_color="#2b2b2b",
+            bg_color="#2b2b2b",
+            text_color="gray70",
+            placeholder_text_color="gray52"
+        )
+        
+        # Disable all action buttons and reset their appearance
+        self.gif_embed_button.configure(
+            state="disabled",
+            text_color_disabled="#8fbf8f"
+        )
+        self.gif_extract_button.configure(
+            state="disabled",
+            text_color_disabled="#8fbf8f"
+        )
+        self.gif_metadata_button.configure(
+            state="disabled",
+            text_color_disabled="#8fbf8f"
+        )
+        self.gif_generate_key_button.configure(
+            state="disabled",
+            text_color_disabled="#8fbf8f"
+        )
+        
+        # Enable the browse button
+        self.load_gif_button.configure(state="normal")
+        
+        # Final UI update
+        self.root.update_idletasks()
 
     def set_button_state(self, button, state, operation=False):
         """Enable/disable buttons during processing."""
@@ -1197,6 +1336,30 @@ class SteganographyApp:
         """Start the image embedding process."""
         if self.operation_in_progress:
             return
+
+        # Check for carrier image first
+        if not self.carrier_image_path:
+            messagebox.showerror("Error", "Please select a carrier image first.")
+            return
+
+        # Check for data files
+        if not self.data_file_path:
+            messagebox.showerror("Error", "Please select files to hide first.")
+            return
+
+        # Check for encryption key
+        key_str = self.key_entry.get().strip()
+        if not key_str:
+            messagebox.showerror("Error", "Please generate or enter an encryption key first.")
+            return
+
+        # Check for password
+        password = self.password_entry.get().strip()
+        if not password:
+            messagebox.showerror("Error", "Please enter a password for embedding.")
+            return
+
+        # If all checks pass, proceed with validation and embedding
         valid, password, author = self.validate_inputs(self.password_entry, self.author_entry)
         if not valid:
             return
@@ -1232,29 +1395,65 @@ class SteganographyApp:
                 key_str=key_str,
                 password=password,
                 author=author,
-                update_progress_callback=self.update_progress
+                update_progress_callback=lambda value: self.root.after(0, lambda v=value: self.update_progress(v))
             )
 
-            # Save the resulting stego-image
-            save_path = filedialog.asksaveasfilename(defaultextension=".png", filetypes=[("PNG files", "*.png")])
-            if save_path:
-                self.stego_image.save(save_path, format="PNG", compress_level=0)
-                self.root.after(0, lambda: self.update_progress(100))
-                self.root.after(0, lambda: messagebox.showinfo("Success", f"{len(self.data_file_path)} files embedded successfully!"))
-                self.history_manager.add_entry("Embed", f"Embedded {len(self.data_file_path)} files into {save_path} (Image-Stego)")
-                self.update_history_view()
-                self.root.after(100, self.reset_fields)
+            # Use root.after to handle file dialog in main thread
+            def save_stego_image():
+                try:
+                    save_path = filedialog.asksaveasfilename(
+                        defaultextension=".png",
+                        filetypes=[("PNG files", "*.png")],
+                        initialfile=""  # Empty initial filename
+                    )
+                    if save_path:
+                        self.stego_image.save(save_path, format="PNG", compress_level=0)
+                        self.update_progress(100)
+                        messagebox.showinfo("Success", f"{len(self.data_file_path)} files embedded successfully!")
+                        self.history_manager.add_entry(
+                            "Embed",
+                            f"Embedded {len(self.data_file_path)} files into {save_path} (Image-Stego)"
+                        )
+                        self.update_history_view()
+                        self.reset_fields()
+                    else:
+                        self.update_progress(0)
+                except Exception as save_error:
+                    messagebox.showerror("Error", f"Failed to save image: {str(save_error)}")
+                    self.update_progress(0)
+                finally:
+                    self.set_button_state(self.embed_button, "normal", operation=True)
+
+            self.root.after(0, save_stego_image)
 
         except Exception as e:
             self.root.after(0, lambda: messagebox.showerror("Error", f"Embedding failed: {str(e)}"))
             self.root.after(0, lambda: self.update_progress(0))
-        finally:
             self.set_button_state(self.embed_button, "normal", operation=True)
 
     def start_extract(self):
         """Start the image extraction process."""
         if self.operation_in_progress:
             return
+
+        # Check for carrier image first
+        if not self.carrier_image_path:
+            messagebox.showerror("Error", "Please select a carrier image first.")
+            return
+
+        # Check for encryption key
+        key_str = self.key_entry.get().strip()
+        if not key_str:
+            messagebox.showerror("Error", "Please generate or enter an encryption key first.")
+            return
+
+        # Check for password
+        password = self.password_entry.get().strip()
+        if not password:
+            messagebox.showerror("Error", "Please enter the password used during embedding.")
+            return
+
+        # If all checks pass, proceed with validation and extraction
         valid, password, author = self.validate_inputs(self.password_entry, self.author_entry, for_embedding=False)
         if not valid:
             return
@@ -1305,7 +1504,7 @@ class SteganographyApp:
             if not output_folder:
                 self.root.after(0, lambda: messagebox.showinfo("Cancelled", "Extraction cancelled by user."))
                 self.root.after(0, lambda: self.update_progress(0))
-                self.root.after(100, self.reset_fields)
+                self.root.after(0, self.reset_fields)  # Reset immediately when cancelled
                 self.set_button_state(self.extract_button, "normal", operation=True)
                 return
 
@@ -1333,11 +1532,12 @@ class SteganographyApp:
                 f"Extracted {len(files_data)} files from {self.carrier_image_path} to {output_subfolder} (Image-Stego)"
             )
             self.update_history_view()
-            self.root.after(100, self.reset_fields)
+            self.root.after(0, self.reset_fields)  # Reset immediately after success
 
         except Exception as e:
             self.root.after(0, lambda: messagebox.showerror("Error", f"Extraction failed: {str(e)}"))
             self.root.after(0, lambda: self.update_progress(0))
+            self.root.after(0, self.reset_fields)  # Reset immediately on error
         finally:
             self.set_button_state(self.extract_button, "normal", operation=True)
 
@@ -1410,6 +1610,30 @@ class SteganographyApp:
         """Start the GIF embedding process."""
         if self.operation_in_progress:
             return
+
+        # Check for carrier GIF first
+        if not self.carrier_gif_path:
+            messagebox.showerror("Error", "Please select a carrier GIF first.")
+            return
+
+        # Check for data files
+        if not self.gif_data_file_path:
+            messagebox.showerror("Error", "Please select files to hide first.")
+            return
+
+        # Check for encryption key
+        key_str = self.gif_key_entry.get().strip()
+        if not key_str:
+            messagebox.showerror("Error", "Please generate or enter an encryption key first.")
+            return
+
+        # Check for password
+        password = self.gif_password_entry.get().strip()
+        if not password:
+            messagebox.showerror("Error", "Please enter a password for embedding.")
+            return
+
+        # If all checks pass, proceed with validation and embedding
         valid, password, author = self.validate_inputs(self.gif_password_entry, self.gif_author_entry)
         if not valid:
             return
@@ -1439,11 +1663,20 @@ class SteganographyApp:
 
         try:
             output_data = self.gif_logic.embed_data(
-                self.carrier_gif_path, self.gif_data_file_path, key_str, password, author,
+                self.carrier_gif_path,
+                self.gif_data_file_path,
+                key_str,
+                password,
+                author,
                 lambda value: self.root.after(0, lambda v=value: self.update_gif_progress(v))
             )
 
-            save_path = filedialog.asksaveasfilename(defaultextension=".gif", filetypes=[("GIF files", "*.gif")])
+            save_path = filedialog.asksaveasfilename(
+                defaultextension=".gif",
+                filetypes=[("GIF files", "*.gif")],
+                initialfile=""  # Empty initial filename
+            )
+            
             if save_path:
                 with open(save_path, "wb") as output_file:
                     output_file.write(output_data)
@@ -1466,6 +1699,25 @@ class SteganographyApp:
         """Start the GIF extraction process."""
         if self.operation_in_progress:
             return
+
+        # Check for carrier GIF first
+        if not self.carrier_gif_path:
+            messagebox.showerror("Error", "Please select a carrier GIF first.")
+            return
+
+        # Check for encryption key
+        key_str = self.gif_key_entry.get().strip()
+        if not key_str:
+            messagebox.showerror("Error", "Please generate or enter an encryption key first.")
+            return
+
+        # Check for password
+        password = self.gif_password_entry.get().strip()
+        if not password:
+            messagebox.showerror("Error", "Please enter the password used during embedding.")
+            return
+
+        # If all checks pass, proceed with validation and extraction
         valid, password, author = self.validate_inputs(self.gif_password_entry, self.gif_author_entry, for_embedding=False)
         if not valid:
             return
@@ -1513,7 +1765,7 @@ class SteganographyApp:
             if not output_folder:
                 self.root.after(0, lambda: messagebox.showinfo("Cancelled", "Extraction cancelled by user."))
                 self.root.after(0, lambda: self.update_gif_progress(0))
-                self.root.after(100, self.reset_gif_fields)
+                self.root.after(0, self.reset_gif_fields)  # Reset immediately when cancelled
                 self.set_button_state(self.gif_extract_button, "normal", operation=True)
                 return
 
@@ -1542,11 +1794,12 @@ class SteganographyApp:
                 f"Extracted {len(files_data)} files from {self.carrier_gif_path} to {output_subfolder} (GIF-Stego)"
             )
             self.update_history_view()
-            self.root.after(100, self.reset_gif_fields)
+            self.root.after(0, self.reset_gif_fields)  # Reset immediately after success
 
         except Exception as e:
             self.root.after(0, lambda: messagebox.showerror("Error", f"Extraction failed: {str(e)}"))
             self.root.after(0, lambda: self.update_gif_progress(0))
+            self.root.after(0, self.reset_gif_fields)  # Reset immediately on error
         finally:
             self.set_button_state(self.gif_extract_button, "normal", operation=True)
 
