@@ -293,5 +293,20 @@
         "timestamp": "2025-04-26 04:01:05",
         "operation": "Extract",
         "details": "Extracted 1 files from C:/Users/Ziad/Desktop/106.png to C:/Users/Ziad/Desktop\\Extracted_106_20250426_040105 (Image-Stego)"
+    },
+    {
+        "timestamp": "2025-04-26 04:20:42",
+        "operation": "Key Generation",
+        "details": "Generated a new encryption key for Image-Stego."
+    },
+    {
+        "timestamp": "2025-04-26 04:21:09",
+        "operation": "Embed",
+        "details": "Embedded 1 files into C:/Users/Ziad/Desktop/107.png (Image-Stego)"
+    },
+    {
+        "timestamp": "2025-04-26 04:22:17",
+        "operation": "Extract",
+        "details": "Extracted 1 files from C:/Users/Ziad/Desktop/107.png to C:/Users/Ziad/Desktop\\Extracted_107_20250426_042217 (Image-Stego)"
     }
 ]

@@ -1198,7 +1198,7 @@ class SteganographyApp:
         self.key_entry.delete(0, "end")
         self.key_entry.configure(
             state="disabled",
-            placeholder_text="Enter or generate a key",
+            placeholder_text="",
             fg_color="#2b2b2b",
             bg_color="#2b2b2b",
             text_color="gray70",
@@ -1208,7 +1208,7 @@ class SteganographyApp:
         self.password_entry.delete(0, "end")
         self.password_entry.configure(
             state="disabled",
-            placeholder_text="Enter password (optional)",
+            placeholder_text="",
             fg_color="#2b2b2b",
             bg_color="#2b2b2b",
             text_color="gray70",
@@ -1219,7 +1219,7 @@ class SteganographyApp:
         self.author_entry.delete(0, "end")
         self.author_entry.configure(
             state="disabled",
-            placeholder_text="Enter author name (optional)",
+            placeholder_text="",
             fg_color="#2b2b2b",
             bg_color="#2b2b2b",
             text_color="gray70",
@@ -1274,7 +1274,7 @@ class SteganographyApp:
         self.gif_key_entry.delete(0, "end")
         self.gif_key_entry.configure(
             state="disabled",
-            placeholder_text="Enter or generate a key",
+            placeholder_text="",
             fg_color="#2b2b2b",
             bg_color="#2b2b2b",
             text_color="gray70",
@@ -1284,7 +1284,7 @@ class SteganographyApp:
         self.gif_password_entry.delete(0, "end")
         self.gif_password_entry.configure(
             state="disabled",
-            placeholder_text="Enter password (optional)",
+            placeholder_text="",
             fg_color="#2b2b2b",
             bg_color="#2b2b2b",
             text_color="gray70",
@@ -1295,7 +1295,7 @@ class SteganographyApp:
         self.gif_author_entry.delete(0, "end")
         self.gif_author_entry.configure(
             state="disabled",
-            placeholder_text="Enter author name (optional)",
+            placeholder_text="",
             fg_color="#2b2b2b",
             bg_color="#2b2b2b",
             text_color="gray70",
