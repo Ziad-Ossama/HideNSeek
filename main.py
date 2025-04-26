@@ -70,35 +70,12 @@ class SteganographyApp:
         self.root.title("HideNSeek")
         self.root.geometry("900x700")
 
-        # Custom title bar styling
-        if sys.platform.startswith('win'):
-            try:
-                from ctypes import windll, byref, sizeof, c_int
-                HWND = windll.user32.GetParent(self.root.winfo_id())
-                # Dark title bar
-                windll.dwmapi.DwmSetWindowAttribute(
-                    HWND,
-                    20,  # DWMWA_CAPTION_COLOR
-                    byref(c_int(0x1F1F1F)),  # Dark gray background
-                    sizeof(c_int)
-                )
-                # Title text color
-                windll.dwmapi.DwmSetWindowAttribute(
-                    HWND,
-                    36,  # DWMWA_CAPTION_TEXT_COLOR
-                    byref(c_int(0xFFFFFF)),  # White text
-                    sizeof(c_int)
-                )
-                print("Successfully applied custom title bar styling")
-            except Exception as e:
-                print(f"Failed to apply custom title bar: {str(e)}")
-
         # Load and set the application icon
         icon_path = os.path.join("assets", "logo.png")
         if os.path.exists(icon_path):
             try:
+                # For taskbar icon we still need to use PhotoImage
                 icon_image = Image.open(icon_path)
-                # Convert to PhotoImage for taskbar icon
                 icon_photo = ImageTk.PhotoImage(icon_image)
                 self.root.iconphoto(True, icon_photo)
                 print(f"Successfully loaded icon from {icon_path}")
@@ -152,15 +129,15 @@ class SteganographyApp:
         logo_path = os.path.join("assets", "logo.png")
         if os.path.exists(logo_path):
             try:
-                # Load and resize the logo
-                logo_image = Image.open(logo_path)
-                # Make the logo a bit larger in the sidebar
-                logo_image = logo_image.resize((120, 120), Image.Resampling.LANCZOS)
-                logo_photo = ImageTk.PhotoImage(logo_image)
+                # Use CTkImage for better HighDPI support
+                logo_image = ctk.CTkImage(
+                    light_image=Image.open(logo_path),
+                    dark_image=Image.open(logo_path),
+                    size=(120, 120)
+                )
                 
                 # Create and pack the logo label
-                logo_label = ctk.CTkLabel(self.sidebar_frame, image=logo_photo, text="")
-                logo_label.image = logo_photo  # Keep a reference to prevent garbage collection
+                logo_label = ctk.CTkLabel(self.sidebar_frame, image=logo_image, text="")
                 logo_label.pack(pady=(20, 10))
                 print(f"Successfully loaded sidebar logo from {logo_path}")
             except Exception as e:
