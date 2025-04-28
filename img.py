@@ -22,8 +22,8 @@ class SteganographyLogic:
     """Handles steganography logic for embedding and extracting data in images."""
     def __init__(self):
         self.cipher = None
-        self.MAX_FILES_EMBED = 40
-        self.MAX_REASONABLE_SIZE = 1024 * 1024 * 500  # 500 MB max
+        self.MAX_FILES_EMBED = 20
+        self.MAX_REASONABLE_SIZE = 1024 * 1024 * 100  # 100 MB max
         self.MAGIC_MARKER = b'\xDE\xAD\xBE\xEF'
         self.METADATA_MARKER = b'\xCA\xFE\xBA\xBE'
 
@@ -42,9 +42,9 @@ class SteganographyLogic:
             self.cipher = Fernet(key)
             return True
         except Exception as e:
-            logging.error(f"Cipher setup failed: {str(e)}")
+            logging.error(f"Cipher setup failed")
             if root:
-                root.after(0, lambda: root.show_error(f"Invalid key: {str(e)}"))
+                root.after(0, lambda: root.show_error(f"Invalid key"))
             return False
 
     def compress_data(self, data):
@@ -56,7 +56,7 @@ class SteganographyLogic:
         try:
             return zlib.decompress(compressed_data)
         except zlib.error as e:
-            raise ValueError(f"Decompression failed: {str(e)}")
+            raise ValueError(f"Decompression failed")
 
     def derive_password_hash(self, password):
         """Derive a 32-byte hash from the password using PBKDF2HMAC."""
@@ -85,14 +85,14 @@ class SteganographyLogic:
     def embed_data(self, image_path, data_file_paths, key_str, password, author, update_progress_callback):
         """Embed multiple files into an image."""
         if not self.get_cipher(key_str):
-            raise ValueError("Invalid encryption key")
+            raise ValueError("Invalid Encryption key")
         if len(data_file_paths) > self.MAX_FILES_EMBED:
             raise ValueError(f"Cannot embed more than {self.MAX_FILES_EMBED} files")
         if not os.path.exists(image_path):
             raise ValueError("Carrier image does not exist")
         for path in data_file_paths:
             if not os.path.exists(path):
-                raise ValueError(f"Data file does not exist: {path}")
+                raise ValueError(f"Data file does not exist")
 
         try:
             carrier_image = Image.open(image_path).convert('RGB')
@@ -222,11 +222,11 @@ class SteganographyLogic:
             key_bytes = key_str.encode('utf-8')
             stored_key_hash = hidden_data[4:36]
             if hashlib.sha256(key_bytes).digest() != stored_key_hash:
-                raise ValueError("Key mismatch: incorrect key provided")
+                raise ValueError("Password Mismatch or Key Mismatch")
 
             stored_password_hash = hidden_data[36:68]
             if self.derive_password_hash(password) != stored_password_hash:
-                raise ValueError("Password mismatch: incorrect password provided")
+                raise ValueError("Password Mismatch or Key Mismatch")
 
             file_count = struct.unpack(">I", hidden_data[68:72])[0]
             pos = 72
@@ -275,13 +275,13 @@ class SteganographyLogic:
                     files_data.append((new_filename, ext_str, raw_data))
                     update_progress_callback(60 + (30 * (i + 1) // file_count))
                 except InvalidToken:
-                    raise ValueError(f"Decryption failed for file {filename_str}: incorrect key")
+                    raise ValueError(f"Decryption failed for file {filename_str}")
                 except zlib.error as e:
-                    raise ValueError(f"Decompression failed for file {filename_str}: {str(e)}")
+                    raise ValueError(f"Decompression failed for file {filename_str}")
 
             update_progress_callback(90)
             return files_data, author, timestamp_readable
 
         except Exception as e:
-            logging.error(f"Extraction failed: {str(e)}")
-            raise ValueError(f"Extraction failed: {str(e)}")
+            logging.error(f"Extraction failed")
+            raise ValueError(f"Extraction failed")

@@ -314,7 +314,8 @@ class SteganographyApp:
             width=300, 
             placeholder_text="Enter or generate a key",
             font=("Helvetica", 14, "normal"),
-            state="disabled"
+            state="disabled" , 
+            show="*"
         )
         self.key_entry.pack(pady=(0, button_pady))
         
@@ -460,7 +461,8 @@ class SteganographyApp:
             width=300,
             placeholder_text="Enter or generate a key",
             font=("Helvetica", 14, "normal"),
-            state="disabled"
+            state="disabled" , 
+            show="*"
         )
         self.gif_key_entry.pack(pady=(0, button_pady))
         
@@ -477,13 +479,7 @@ class SteganographyApp:
             text_color_disabled="#8fbf8f"
         )
         self.gif_generate_key_button.pack(pady=(button_pady, button_pady))
-        
-        self.gif_estimates_label = ctk.CTkLabel(
-            self.gif_key_section, text="", font=("Helvetica", 12, "italic"),
-            text_color="#66BB6A", wraplength=300, justify="left", anchor="w"
-        )
-        self.gif_estimates_label.pack_forget()
-
+    
         # Authentication Section
         self.gif_auth_section = ctk.CTkFrame(scrollable_frame, corner_radius=10)
         self.gif_auth_section.pack(fill="x", pady=5)
@@ -1171,11 +1167,13 @@ class SteganographyApp:
                 # Enable the key entry and authentication fields with updated placeholders
                 self.root.after(0, lambda: self.key_entry.configure(
                     state="normal", 
-                    placeholder_text="Enter or generate a key"
+                    placeholder_text="Enter or generate a key" , 
+                    show="*"
                 ))
                 self.root.after(0, lambda: self.password_entry.configure(
                     state="normal", 
-                    placeholder_text="Enter password (optional)"
+                    placeholder_text="Enter password" , 
+                    show="*"
                 ))
                 self.root.after(0, lambda: self.author_entry.configure(
                     state="normal", 
@@ -1221,11 +1219,13 @@ class SteganographyApp:
                 # Enable input fields with updated placeholders
                 self.root.after(0, lambda: self.gif_key_entry.configure(
                     state="normal", 
-                    placeholder_text="Enter or generate a key"
+                    placeholder_text="Enter or generate a key" , 
+                    show="*"
                 ))
                 self.root.after(0, lambda: self.gif_password_entry.configure(
                     state="normal", 
-                    placeholder_text="Enter password (optional)"
+                    placeholder_text="Enter password (optional)" , 
+                    show="*"
                 ))
                 self.root.after(0, lambda: self.gif_author_entry.configure(
                     state="normal", 
@@ -1434,7 +1434,8 @@ class SteganographyApp:
             placeholder_text="",
             fg_color="#2b2b2b",
             bg_color="#2b2b2b",
-            text_color="gray70"
+            text_color="gray70" , 
+            show="*"
         )
         
         self.password_entry.delete(0, "end")
@@ -1456,6 +1457,8 @@ class SteganographyApp:
             text_color="gray70"
         )
         
+        self.root.focus_set()
+
         # Disable all action buttons and reset their appearance
         self.embed_button.configure(
             state="disabled",
@@ -1511,7 +1514,8 @@ class SteganographyApp:
             placeholder_text="",
             fg_color="#2b2b2b",
             bg_color="#2b2b2b",
-            text_color="gray70"
+            text_color="gray70" , 
+            show="*"
         )
         
         self.gif_password_entry.delete(0, "end")
@@ -1532,7 +1536,9 @@ class SteganographyApp:
             bg_color="#2b2b2b",
             text_color="gray70"
         )
-        
+
+        self.root.focus_set()
+
         # Disable all action buttons and reset their appearance
         self.gif_embed_button.configure(
             state="disabled",
@@ -2159,7 +2165,12 @@ class SteganographyApp:
                 return
                 
             # Get password if provided
-            password = self.gif_password_entry.get().strip()
+            gif_password = self.gif_password_entry.get().strip()
+            if not gif_password:
+                messagebox.showerror("Error", "Please provide a password.")
+                self.update_gif_progress(0)
+                self.set_button_state(self.gif_metadata_button, "normal", operation=True)
+                return
             
             self.update_gif_progress(20)
             
@@ -2174,10 +2185,10 @@ class SteganographyApp:
             # Try to view metadata
             try:
                 # Use gif_logic to extract metadata
-                author, timestamp = self.gif_logic.view_metadata(
+                author, timestamp, file_count = self.gif_logic.view_metadata(
                     self.carrier_gif_path,
                     key_str,
-                    password,
+                    gif_password,
                     lambda value: self.root.after(0, lambda v=value: self.update_gif_progress(v))
                 )
                 
@@ -2186,7 +2197,8 @@ class SteganographyApp:
                 # Display the metadata
                 messagebox.showinfo(
                     "Metadata Information",
-                    f"Metadata successfully extracted!\n\n"
+                    f"Metadata Successfully Extracted!\n\n"
+                    f"File Contains {file_count} Embedded Files\n"
                     f"Author: {author}\n"
                     f"Timestamp: {timestamp}"
                 )

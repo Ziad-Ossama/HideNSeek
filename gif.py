@@ -13,6 +13,7 @@ from PIL import Image
 from tkinter import messagebox
 import secrets
 from base64 import b64encode, b64decode
+import base64
 
 # Setup logging for debugging
 logging.basicConfig(filename='steganography.log', level=logging.INFO,
@@ -52,15 +53,18 @@ class GIFSteganographyLogic:
                 root.after(0, lambda: messagebox.showerror("Error", "Please provide an encryption key."))
             return False
         try:
-            self.key = key_str.encode('utf-8')
-            self.cipher = Fernet(self.key)
+            key_bytes = key_str.encode('utf-8')
+            key = base64.urlsafe_b64encode(hashlib.sha256(key_bytes).digest())
+            self.cipher = Fernet(key)
+            # Also generate the HMAC key
             kdf = PBKDF2HMAC(
                 algorithm=hashes.SHA256(),
                 length=32,
                 salt=b"YrLgT7hpEq2bYw!!7WC9tW8ogVVLhowXv9-iko4MghAuXixm34d6TdtYRA*9ZWiLi7aLWLNw77uEMAoCPZZVd3Y*RT7no_7@pYHm",
                 iterations=100000,
             )
-            self.hmac_key = kdf.derive(self.key)
+            self.hmac_key = kdf.derive(key_bytes)
+            self.key = key_bytes
             return True
         except Exception as e:
             logging.error(f"Cipher setup failed: {str(e)}")
@@ -371,4 +375,4 @@ class GIFSteganographyLogic:
         timestamp_readable = datetime.fromtimestamp(int(timestamp)).strftime('%Y-%m-%d %H:%M:%S') if timestamp.isdigit() else "Invalid timestamp"
 
         progress_callback(100)
-        return author, timestamp_readable
+        return author, timestamp_readable , file_count
