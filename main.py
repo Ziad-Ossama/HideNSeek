@@ -621,236 +621,7 @@ class SteganographyApp:
                             "6. Check the history tab to see past operations.\n\n"
                             "Note: Ensure the key and password match during extraction!")
 
-    def update_history_view(self):
-        """Update the history view with the latest entries."""
-        for item in self.history_tree.get_children():
-            self.history_tree.delete(item)
-        for entry in self.history_manager.get_history():
-            self.history_tree.insert("", "end", values=(
-                entry["timestamp"], entry["operation"], entry["details"]
-            ))
-
-    def estimate_embedding_time(self):
-        """Estimate the time required for image embedding."""
-        if not self.carrier_image_path or not self.data_file_path:
-            return None
-
-        try:
-            key_str = self.key_entry.get().strip()
-            temp_logic = SteganographyLogic()
-            if not key_str:
-                temp_key = Fernet.generate_key()
-                temp_logic.get_cipher(temp_key.decode())
-            else:
-                temp_logic.get_cipher(key_str)
-
-            with Image.open(self.carrier_image_path) as carrier_image:
-                carrier_image = carrier_image.convert('RGB')
-                image_array = np.array(carrier_image, dtype=np.uint8)
-                flat_image = image_array.ravel()
-
-                total_size = sum(os.path.getsize(path) for path in self.data_file_path)
-                author = self.author_entry.get().strip() or "N/A"
-                author_bytes = author.encode('utf-8', errors='replace')[:50].ljust(50, b' ')
-                timestamp = str(int(time.time())).encode('utf-8')[:20].ljust(20, b' ')
-                metadata = b'\xCA\xFE\xBA\xBE' + author_bytes + timestamp
-                encrypted_metadata = temp_logic.cipher.encrypt(metadata)
-                estimated_metadata_size = len(encrypted_metadata) + 4
-
-                file_count = len(self.data_file_path)
-                file_metadata_size = file_count * (50 + 10 + 4)
-                compressed_size = int(total_size * 0.7)
-                encrypted_size = compressed_size + 100 * file_count
-                total_data_size = (len(b'\xDE\xAD\xBE\xEF') + 32 + 32 + 4 + file_metadata_size + 
-                                encrypted_size + estimated_metadata_size + 32 + 4)
-                total_bits = total_data_size * 8 + 16
-
-                if total_bits > len(flat_image):
-                    return f"Data too large. Required: {total_bits} bits, Available: {len(flat_image)} bits"
-
-                sample_size = min(5000, len(flat_image))
-                dummy_array = flat_image[:sample_size].copy()
-                sample_bits = [0] * sample_size
-
-                start_time = time.perf_counter()
-                for i in range(sample_size):
-                    pixel_value = dummy_array[i] & 0xFE
-                    bit_value = sample_bits[i]
-                    dummy_array[i] = pixel_value | bit_value
-                end_time = time.perf_counter()
-
-                time_taken = end_time - start_time
-                bits_per_second = sample_size / (time_taken if time_taken > 0 else 0.0001)
-                estimated_time = total_bits / bits_per_second
-
-                return estimated_time * 1.10
-
-        except Exception as e:
-            return f"Estimation failed: {str(e)}"
-
-    def estimate_extracting_time(self):
-        """Estimate the time required for image extraction."""
-        if not self.carrier_image_path:
-            return None
-
-        try:
-            key_str = self.key_entry.get().strip()
-            temp_logic = SteganographyLogic()
-            if not key_str:
-                temp_key = Fernet.generate_key()
-                temp_logic.get_cipher(temp_key.decode())
-            else:
-                temp_logic.get_cipher(key_str)
-
-            with Image.open(self.carrier_image_path) as carrier_image:
-                carrier_image = carrier_image.convert('RGB')
-                image_array = np.array(carrier_image, dtype=np.uint8)
-                flat_image = image_array.ravel()
-
-                total_bits = len(flat_image)
-                sample_size = min(5000, len(flat_image))
-                dummy_array = flat_image[:sample_size]
-
-                start_time = time.perf_counter()
-                _ = [(pixel & 1) for pixel in dummy_array]
-                end_time = time.perf_counter()
-
-                time_taken = end_time - start_time
-                bits_per_second = sample_size / (time_taken if time_taken > 0 else 0.0001)
-                estimated_time = total_bits / bits_per_second
-
-                return estimated_time * 1.05
-
-        except Exception as e:
-            return f"Estimation failed: {str(e)}"
-
-    def estimate_gif_embedding_time(self):
-        """Estimate the time required for GIF embedding."""
-        if not self.carrier_gif_path or not self.gif_data_file_path:
-            return None
-
-        try:
-            key_str = self.gif_key_entry.get().strip()
-            temp_logic = GIFSteganographyLogic()
-            if not key_str:
-                temp_key = Fernet.generate_key()
-                temp_logic.get_cipher(temp_key.decode())
-            else:
-                temp_logic.get_cipher(key_str)
-
-            total_size = sum(os.path.getsize(path) for path in self.gif_data_file_path)
-            file_count = len(self.gif_data_file_path)
-            
-            author = self.gif_author_entry.get().strip() or "N/A"
-            author_bytes = author.encode('utf-8', errors='replace')[:50].ljust(50, b' ')
-            timestamp = str(int(time.time())).encode('utf-8')[:20].ljust(20, b' ')
-            metadata = b'\xCA\xFE\xBA\xBE' + author_bytes + timestamp
-            encrypted_metadata = temp_logic.cipher.encrypt(metadata)
-            estimated_metadata_size = len(encrypted_metadata) + 4
-
-            file_metadata_size = file_count * (50 + 10 + 4)
-            compressed_size = int(total_size * 0.7)
-            encrypted_size = compressed_size + 100 * file_count
-            total_data_size = (len(b'\xDE\xAD\xBE\xEF') + 16 + 16 + 4 + file_metadata_size + 
-                               encrypted_size + estimated_metadata_size + 32 + 4)
-
-            sample_size = min(1024 * 1024, total_size)
-            sample_data = b"\x00" * sample_size
-            start_time = time.perf_counter()
-            compressed_sample = temp_logic.compress_data(sample_data)
-            encrypted_sample = temp_logic.cipher.encrypt(compressed_sample)
-            end_time = time.perf_counter()
-
-            time_taken = end_time - start_time
-            bytes_per_second = sample_size / (time_taken if time_taken > 0 else 0.0001)
-            estimated_time = total_data_size / bytes_per_second
-
-            return estimated_time * 1.10
-
-        except Exception as e:
-            return f"Estimation failed: {str(e)}"
-
-    def estimate_gif_extracting_time(self):
-        """Estimate the time required for GIF extraction."""
-        if not self.carrier_gif_path:
-            return None
-
-        try:
-            key_str = self.gif_key_entry.get().strip()
-            temp_logic = GIFSteganographyLogic()
-            if not key_str:
-                temp_key = Fernet.generate_key()
-                temp_logic.get_cipher(temp_key.decode())
-            else:
-                temp_logic.get_cipher(key_str)
-
-            with open(self.carrier_gif_path, "rb") as gif_file:
-                file_data = gif_file.read()
-            total_size = len(file_data)
-
-            sample_size = 1024 * 1024
-            sample_data = b"\x00" * sample_size
-            compressed_sample = temp_logic.compress_data(sample_data)
-            encrypted_sample = temp_logic.cipher.encrypt(compressed_sample)
-
-            start_time = time.perf_counter()
-            decrypted_sample = temp_logic.cipher.decrypt(encrypted_sample)
-            temp_logic.decompress_data(decrypted_sample)
-            end_time = time.perf_counter()
-
-            time_taken = end_time - start_time
-            bytes_per_second = sample_size / (time_taken if time_taken > 0 else 0.0001)
-            estimated_time = total_size / bytes_per_second
-
-            return estimated_time * 1.05
-
-        except Exception as e:
-            return f"Estimation failed: {str(e)}"
-
-    def update_estimated_times(self):
-        """Update the estimated time labels based on current selected files."""
-        try:
-            # Only update if we have the necessary information
-            if self.current_frame == self.image_stego_frame:
-                if self.current_operation == "embed" and self.carrier_image_path and self.data_file_path:
-                    estimate = self.estimate_embedding_time()
-                    if estimate:
-                        self.estimates_label.configure(text=f"Estimated time: {estimate}")
-                        if not self.estimates_visible:
-                            self.estimates_label.pack(pady=(5, 0))
-                            self.estimates_visible = True
-                elif self.current_operation == "extract" and self.carrier_image_path:
-                    estimate = self.estimate_extracting_time()
-                    if estimate:
-                        self.estimates_label.configure(text=f"Estimated time: {estimate}")
-                        if not self.estimates_visible:
-                            self.estimates_label.pack(pady=(5, 0))
-                            self.estimates_visible = True
-                else:
-                    self.estimates_label.pack_forget()
-                    self.estimates_visible = False
-            elif self.current_frame == self.gif_stego_frame:
-                if self.current_operation == "embed" and self.carrier_gif_path and self.gif_data_file_path:
-                    estimate = self.estimate_gif_embedding_time()
-                    if estimate:
-                        self.gif_estimates_label.configure(text=f"Estimated time: {estimate}")
-                        if not self.estimates_visible:
-                            self.gif_estimates_label.pack(pady=(5, 0))
-                            self.estimates_visible = True
-                elif self.current_operation == "extract" and self.carrier_gif_path:
-                    estimate = self.estimate_gif_extracting_time()
-                    if estimate:
-                        self.gif_estimates_label.configure(text=f"Estimated time: {estimate}")
-                        if not self.estimates_visible:
-                            self.gif_estimates_label.pack(pady=(5, 0))
-                            self.estimates_visible = True
-                else:
-                    self.gif_estimates_label.pack_forget()
-                    self.estimates_visible = False
-        except Exception as e:
-            logging.error(f"Error updating estimated times: {str(e)}")
-            # Don't show error to user, just log it
-
+    
     def generate_key(self):
         """Generate a new encryption key and copy it to the clipboard for image stego."""
         # Use SteganographyLogic to generate the key
@@ -860,7 +631,7 @@ class SteganographyApp:
         pyperclip.copy(self.key)
         messagebox.showinfo("Key Generated", "Key copied to clipboard.")
         self.history_manager.add_entry("Key Generation", "Generated a new encryption key for Image-Stego.")
-        self.update_estimated_times()
+
 
     def generate_gif_key(self):
         """Generate a new encryption key and copy it to the clipboard for GIF stego."""
@@ -871,27 +642,6 @@ class SteganographyApp:
         pyperclip.copy(self.key)
         messagebox.showinfo("Key Generated", "Key copied to clipboard.")
         self.history_manager.add_entry("Key Generation", "Generated a new encryption key for GIF-Stego.")
-        self.update_estimated_times()
-
-    def validate_inputs(self, password_entry, author_entry, for_embedding=True):
-        """Validate user inputs for password and author."""
-        try:
-            password = password_entry.get().strip()
-            author = author_entry.get().strip()
-            
-            # For extraction, we just return the values
-            if not for_embedding:
-                return True, password, author
-                
-            # Additional validation for embedding
-            if not author:
-                author = "Anonymous"  # Default author name if none provided
-                
-            return True, password, author
-        except Exception as e:
-            logging.error(f"Input validation error: {str(e)}")
-            messagebox.showerror("Error", f"Input validation failed: {str(e)}")
-            return False, None, None
 
     def drop_carrier_image(self, event):
         """Handle dropped files for carrier image."""
@@ -901,12 +651,12 @@ class SteganographyApp:
 
         files = self.root.splitlist(event.data)
         if len(files) > 1:
-            messagebox.showerror("Error", "Please drop only one image file.")
+            messagebox.showerror("Error", "Please Drop Only One Image File.")
             return
 
         file_path = files[0]
         if not file_path.lower().endswith(('.png', '.jpg', '.jpeg')):
-            messagebox.showerror("Error", "Please drop a PNG, JPG, or JPEG file.")
+            messagebox.showerror("Error", "Please Drop a PNG, JPG, or JPEG File.")
             return
 
         self.carrier_image_path = file_path
@@ -957,216 +707,6 @@ class SteganographyApp:
                 # Enable the key entry and authentication fields with updated placeholders
                 self.root.after(0, lambda: self.key_entry.configure(
                     state="normal", 
-                    placeholder_text="Enter or generate a key"
-                ))
-                self.root.after(0, lambda: self.password_entry.configure(
-                    state="normal", 
-                    placeholder_text="Enter password (optional)"
-                ))
-                self.root.after(0, lambda: self.author_entry.configure(
-                    state="normal", 
-                    placeholder_text="Enter author name (optional)"
-                ))
-                
-            except Exception as e:
-                self.root.after(0, lambda e=e: messagebox.showerror("Error", f"Failed to load image: {str(e)}"))
-                self.root.after(0, lambda e=e: self.carrier_image_status.configure(text=f"Failed to load image: {str(e)}", text_color="red"))
-                self.root.after(0, self.reset_fields)
-                
-            finally:
-                self.root.after(0, lambda: self.load_image_button.configure(state="normal"))
-                self.root.after(0, self.update_estimated_times)
-
-    def drop_data_file(self, event):
-        """Handle dropped files for data to hide in Image-Stego."""
-        MAX_FILES = 20
-        MAX_FILE_SIZE = 100 * 1024 * 1024  # 100 MB per file for images
-        MAX_TOTAL_SIZE = 500 * 1024 * 1024  # 500 MB total
-
-        files = self.root.splitlist(event.data)
-        if len(files) > MAX_FILES:
-            messagebox.showerror("Error", f"You can only select up to {MAX_FILES} files at a time.")
-            return
-
-        # Check file sizes
-        total_size = 0
-        oversized_files = []
-        for path in files:
-            file_size = os.path.getsize(path)
-            if file_size > MAX_FILE_SIZE:
-                oversized_files.append(f"'{os.path.basename(path)}' ({file_size / (1024*1024):.1f} MB)")
-            total_size += file_size
-            if total_size > MAX_TOTAL_SIZE:
-                messagebox.showerror("Error", 
-                    f"Total size of dropped files ({total_size / (1024*1024):.1f} MB) "
-                    f"exceeds the maximum limit of {MAX_TOTAL_SIZE / (1024*1024):.1f} MB")
-                return
-
-        if oversized_files:
-            messagebox.showerror("Error",
-                f"The following files exceed the {MAX_FILE_SIZE / (1024*1024):.1f} MB per-file limit:\n\n" +
-                "\n".join(oversized_files))
-            return
-
-        self.data_file_path = files
-        self.data_file_status.configure(
-            text=f"{len(self.data_file_path)} files selected (Total: {total_size / (1024*1024):.1f} MB)" 
-            if self.data_file_path else "No files selected",
-            text_color="green" if self.data_file_path else "red"
-        )
-        self.update_estimated_times()
-
-    def load_data_file(self, file_paths=None):
-        """Load data files to embed for image stego."""
-        MAX_FILE_SIZE = 100 * 1024 * 1024  # 100 MB per file for images
-        MAX_TOTAL_SIZE = 500 * 1024 * 1024  # 500 MB total
-        MAX_FILES = 20
-
-        if not file_paths:
-            self.data_file_path = filedialog.askopenfilenames(filetypes=[("All files", "*.*")])
-        else:
-            self.data_file_path = file_paths
-
-        if len(self.data_file_path) > MAX_FILES:
-            messagebox.showerror("Error", f"You can only select up to {MAX_FILES} files at a time.")
-            self.data_file_path = []
-            self.data_file_status.configure(text="No files selected", text_color="red")
-            return
-
-        # Check file sizes
-        total_size = 0
-        oversized_files = []
-        for path in self.data_file_path:
-            file_size = os.path.getsize(path)
-            if file_size > MAX_FILE_SIZE:
-                oversized_files.append(f"'{os.path.basename(path)}' ({file_size / (1024*1024):.1f} MB)")
-            total_size += file_size
-            if total_size > MAX_TOTAL_SIZE:
-                messagebox.showerror("Error", 
-                    f"Total size of selected files ({total_size / (1024*1024):.1f} MB) "
-                    f"exceeds the maximum limit of {MAX_TOTAL_SIZE / (1024*1024):.1f} MB")
-                self.data_file_path = []
-                self.data_file_status.configure(text="No files selected", text_color="red")
-                return
-
-        if oversized_files:
-            messagebox.showerror("Error",
-                f"The following files exceed the {MAX_FILE_SIZE / (1024*1024):.1f} MB per-file limit:\n\n" +
-                "\n".join(oversized_files))
-            self.data_file_path = []
-            self.data_file_status.configure(text="No files selected", text_color="red")
-            return
-
-        self.data_file_status.configure(
-            text=f"{len(self.data_file_path)} files selected (Total: {total_size / (1024*1024):.1f} MB)" 
-            if self.data_file_path else "No files selected",
-            text_color="green" if self.data_file_path else "red"
-        )
-        self.update_estimated_times()
-
-    def validate_gif(self, gif_path):
-        """Validate if a file is a valid GIF."""
-        try:
-            # Check if the file exists
-            if not os.path.exists(gif_path):
-                self.root.after(0, lambda: messagebox.showerror("Error", "GIF file does not exist."))
-                self.root.after(0, self.reset_gif_fields)  # Reset all fields if invalid
-                return False
-                
-            # Check file extension
-            if not gif_path.lower().endswith('.gif'):
-                self.root.after(0, lambda: messagebox.showerror("Error", "Not a GIF file. Please select a file with .gif extension."))
-                self.root.after(0, self.reset_gif_fields)  # Reset all fields if invalid
-                return False
-                
-            # Try to open with PIL
-            try:
-                Image.open(gif_path).verify()
-            except Exception as e:
-                self.root.after(0, lambda: messagebox.showerror("Error", f"Invalid GIF format: {str(e)}"))
-                self.root.after(0, self.reset_gif_fields)  # Reset all fields if invalid
-                return False
-                
-            # Check if the file starts with the GIF signature
-            with open(gif_path, 'rb') as f:
-                header = f.read(6)
-                if not header.startswith(b'GIF8'):
-                    self.root.after(0, lambda: messagebox.showerror("Error", "Not a valid GIF file (invalid header)."))
-                    self.root.after(0, self.reset_gif_fields)  # Reset all fields if invalid
-                    return False
-                    
-            return True
-        except Exception as e:
-            self.root.after(0, lambda: messagebox.showerror("Error", f"Failed to validate GIF: {str(e)}"))
-            self.root.after(0, self.reset_gif_fields)  # Reset all fields if invalid
-            return False
-            
-    def _load_carrier_image_thread(self, new_path):
-        """Thread to load a carrier image."""
-        try:
-            # Verify the image can be opened
-            try:
-                Image.open(new_path).verify()
-            except Exception as e:
-                self.root.after(0, lambda: messagebox.showerror("Error", f"Invalid image file: {str(e)}"))
-                # Reset all fields regardless of whether there was a previous image
-                self.root.after(0, self.reset_fields)
-                return
-                
-            # Update the carrier path and start loading
-            self.carrier_image_path = new_path
-            self._load_carrier_image()
-            
-        except Exception as e:
-            logging.error(f"Failed to load carrier image: {str(e)}")
-            self.root.after(0, lambda: messagebox.showerror("Error", f"Failed to load image: {str(e)}"))
-            # Reset all fields regardless of whether there was a previous image
-            self.root.after(0, self.reset_fields)
-        finally:
-            self.root.after(0, lambda: self.load_image_button.configure(state="normal"))
-
-    def _load_carrier_gif_thread(self, new_path):
-        """Thread to load a carrier GIF."""
-        try:
-            # Verify the GIF is valid
-            if not self.validate_gif(new_path):
-                # Reset function is called inside validate_gif if it fails
-                return
-                
-            # Update the carrier path and start loading
-            self.carrier_gif_path = new_path
-            self._load_carrier_gif()
-            
-        except Exception as e:
-            logging.error(f"Failed to load carrier GIF: {str(e)}")
-            self.root.after(0, lambda: messagebox.showerror("Error", f"Failed to load GIF: {str(e)}"))
-            # Reset all fields regardless of whether there was a previous GIF
-            self.root.after(0, self.reset_gif_fields)
-        finally:
-            self.root.after(0, lambda: self.load_gif_button.configure(state="normal"))
-
-    def _load_carrier_image(self):
-        """Load the carrier image and compute its hash."""
-        with self.image_load_lock:
-            try:
-                with open(self.carrier_image_path, "rb") as f:
-                    self.carrier_image_hash = hashlib.sha256(f.read()).hexdigest()
-                
-                # Update status and enable buttons
-                self.root.after(0, lambda: self.carrier_image_status.configure(
-                    text=f"Image selected ({os.path.basename(self.carrier_image_path)})", 
-                    text_color="green"
-                ))
-                
-                # Enable all action buttons when an image is successfully loaded
-                self.root.after(0, lambda: self.embed_button.configure(state="normal"))
-                self.root.after(0, lambda: self.extract_button.configure(state="normal"))
-                self.root.after(0, lambda: self.metadata_button.configure(state="normal"))
-                self.root.after(0, lambda: self.generate_key_button.configure(state="normal"))
-                
-                # Enable the key entry and authentication fields with updated placeholders
-                self.root.after(0, lambda: self.key_entry.configure(
-                    state="normal", 
                     placeholder_text="Enter or generate a key" , 
                     show="*"
                 ))
@@ -1181,135 +721,46 @@ class SteganographyApp:
                 ))
                 
             except Exception as e:
-                self.root.after(0, lambda e=e: messagebox.showerror("Error", f"Failed to load image: {str(e)}"))
-                self.root.after(0, lambda e=e: self.carrier_image_status.configure(text=f"Failed to load image: {str(e)}", text_color="red"))
+                self.root.after(0, lambda e=e: messagebox.showerror("Error", f"Failed to Load Image"))
+                self.root.after(0, lambda e=e: self.carrier_image_status.configure(text=f"Failed to Load Image", text_color="red"))
                 self.root.after(0, self.reset_fields)
                 
             finally:
                 self.root.after(0, lambda: self.load_image_button.configure(state="normal"))
-                self.root.after(0, self.update_estimated_times)
 
-    def _load_carrier_gif(self):
-        """Load the carrier GIF and compute its hash."""
-        with self.gif_load_lock:
+    def _load_carrier_image_thread(self, new_path):
+        """Thread to load a carrier image."""
+        try:
+            # Verify the image can be opened
             try:
-                with open(self.carrier_gif_path, "rb") as f:
-                    self.carrier_gif_hash = hashlib.sha256(f.read()).hexdigest()
-                
-                # Update status and enable buttons
-                gif_filename = os.path.basename(self.carrier_gif_path)
-                self.root.after(0, lambda: self.carrier_gif_status.configure(
-                    text=f"GIF selected ({gif_filename})", 
-                    text_color="green"
-                ))
-                
-                # Check if this is a steganography GIF (without showing UI notifications)
-                is_stego, _ = self.detect_gif_steganography(self.carrier_gif_path)
-                if is_stego:
-                    print("[STEGO DETECTION] This is a stego GIF.")
-                else:
-                    print("[STEGO DETECTION] This is not a stego GIF.")
-                
-                # Enable buttons when GIF is loaded successfully
-                self.root.after(0, lambda: self.gif_embed_button.configure(state="normal"))
-                self.root.after(0, lambda: self.gif_extract_button.configure(state="normal"))
-                self.root.after(0, lambda: self.gif_metadata_button.configure(state="normal"))
-                self.root.after(0, lambda: self.gif_generate_key_button.configure(state="normal"))
-                
-                # Enable input fields with updated placeholders
-                self.root.after(0, lambda: self.gif_key_entry.configure(
-                    state="normal", 
-                    placeholder_text="Enter or generate a key" , 
-                    show="*"
-                ))
-                self.root.after(0, lambda: self.gif_password_entry.configure(
-                    state="normal", 
-                    placeholder_text="Enter password (optional)" , 
-                    show="*"
-                ))
-                self.root.after(0, lambda: self.gif_author_entry.configure(
-                    state="normal", 
-                    placeholder_text="Enter author name (optional)"
-                ))
-                
+                Image.open(new_path).verify()
             except Exception as e:
-                self.root.after(0, lambda: messagebox.showerror("Error", f"Failed to load GIF: {str(e)}"))
-                self.root.after(0, lambda: self.carrier_gif_status.configure(
-                    text=f"Failed to load GIF: {str(e)}", 
-                    text_color="red"
-                ))
-                
-                # Reset all fields to initial state instead of just disabling buttons
-                self.root.after(0, self.reset_gif_fields)
-                
-            finally:
-                self.root.after(0, lambda: self.load_gif_button.configure(state="normal"))
-                self.root.after(0, self.update_estimated_times)
-
-    def drop_carrier_gif(self, event):
-        """Handle dropped files for carrier GIF."""
-        if self.operation_in_progress or self.gif_load_lock.locked():
-            messagebox.showwarning("Warning", "Please wait for the current operation to finish.")
-            return
-
-        files = self.root.splitlist(event.data)
-        if len(files) > 1:
-            messagebox.showerror("Error", "Please drop only one GIF file.")
-            return
-
-        file_path = files[0]
-        if not file_path.lower().endswith('.gif'):
-            messagebox.showerror("Error", "Please drop a GIF file.")
-            return
-
-        self.carrier_gif_path = file_path
-        if not self.validate_gif(self.carrier_gif_path):
-            messagebox.showerror("Error", "Invalid GIF format!")
-            self.carrier_gif_path = None
-            self.carrier_gif_status.configure(text="No GIF selected", text_color="red")
-            self.update_estimated_times()
-            return
-
-        self.carrier_gif_status.configure(text="Loading...", text_color="yellow")
-        self.load_gif_button.configure(state="disabled")
-        threading.Thread(target=self._load_carrier_gif, daemon=True).start()
-
-    def load_carrier_gif(self, file_path=None):
-        """Load the carrier GIF and compute its hash for integrity."""
-        if self.operation_in_progress or self.gif_load_lock.locked():
-            messagebox.showwarning("Warning", "Please wait for the current operation to finish.")
-            return
-
-        if not file_path:
-            new_path = filedialog.askopenfilename(filetypes=[("GIF files", "*.gif")])
-            # If user cancels, reset everything
-            if not new_path:
-                self.reset_gif_fields()
+                self.root.after(0, lambda: messagebox.showerror("Error", f"Invalid Image File"))
+                # Reset all fields regardless of whether there was a previous image
+                self.root.after(0, self.reset_fields)
                 return
-            self.carrier_gif_path = new_path
-        else:
-            self.carrier_gif_path = file_path
+                
+            # Update the carrier path and start loading
+            self.carrier_image_path = new_path
+            self._load_carrier_image()
+            
+        except Exception as e:
+            logging.error(f"Failed to load carrier image")
+            self.root.after(0, lambda: messagebox.showerror("Error", f"Failed to Load Image"))
+            # Reset all fields regardless of whether there was a previous image
+            self.root.after(0, self.reset_fields)
+        finally:
+            self.root.after(0, lambda: self.load_image_button.configure(state="normal"))
 
-        if not self.validate_gif(self.carrier_gif_path):
-            messagebox.showerror("Error", "Invalid GIF format!")
-            self.carrier_gif_path = None
-            self.carrier_gif_status.configure(text="No GIF selected", text_color="red")
-            self.update_estimated_times()
-            return
-
-        self.carrier_gif_status.configure(text="Loading...", text_color="yellow")
-        self.load_gif_button.configure(state="disabled")
-        threading.Thread(target=self._load_carrier_gif, daemon=True).start()
-
-    def drop_gif_data_file(self, event):
-        """Handle dropped files for data to hide in GIF-Stego."""
+    def drop_data_file(self, event):
+        """Handle dropped files for data to hide in Image-Stego."""
         MAX_FILES = 20
-        MAX_FILE_SIZE = 500 * 1024 * 1024  # 500 MB per file for GIFs
+        MAX_FILE_SIZE = 100 * 1024 * 1024  # 100 MB per file for images
         MAX_TOTAL_SIZE = 500 * 1024 * 1024  # 500 MB total
 
         files = self.root.splitlist(event.data)
         if len(files) > MAX_FILES:
-            messagebox.showerror("Error", f"You can only select up to {MAX_FILES} files at a time.")
+            messagebox.showerror("Error", f"You Can Only Select Up to {MAX_FILES} Files at a Time.")
             return
 
         # Check file sizes
@@ -1322,45 +773,45 @@ class SteganographyApp:
             total_size += file_size
             if total_size > MAX_TOTAL_SIZE:
                 messagebox.showerror("Error", 
-                    f"Total size of dropped files ({total_size / (1024*1024):.1f} MB) "
-                    f"exceeds the maximum limit of {MAX_TOTAL_SIZE / (1024*1024):.1f} MB")
+                    f"Total Size of Dropped Files ({total_size / (1024*1024):.1f} MB) "
+                    f"Exceeds The Maximum Limit of {MAX_TOTAL_SIZE / (1024*1024):.1f} MB")
                 return
 
         if oversized_files:
             messagebox.showerror("Error",
-                f"The following files exceed the {MAX_FILE_SIZE / (1024*1024):.1f} MB per-file limit:\n\n" +
+                f"The Following Files Exceed The {MAX_FILE_SIZE / (1024*1024):.1f} MB Per-File Limit:\n\n" +
                 "\n".join(oversized_files))
             return
 
-        self.gif_data_file_path = files
-        self.gif_data_file_status.configure(
-            text=f"{len(self.gif_data_file_path)} files selected (Total: {total_size / (1024*1024):.1f} MB)" 
-            if self.gif_data_file_path else "No files selected",
-            text_color="green" if self.gif_data_file_path else "red"
+        self.data_file_path = files
+        self.data_file_status.configure(
+            text=f"{len(self.data_file_path)} Files Selected (Total: {total_size / (1024*1024):.1f} MB)" 
+            if self.data_file_path else "No Files Selected",
+            text_color="green" if self.data_file_path else "red"
         )
-        self.update_estimated_times()
 
-    def load_gif_data_file(self, file_paths=None):
-        """Load data files to embed for GIF stego."""
-        MAX_FILE_SIZE = 500 * 1024 * 1024  # 500 MB per file for GIFs
+
+    def load_data_file(self, file_paths=None):
+        """Load data files to embed for image stego."""
+        MAX_FILE_SIZE = 100 * 1024 * 1024  # 100 MB per file for images
         MAX_TOTAL_SIZE = 500 * 1024 * 1024  # 500 MB total
         MAX_FILES = 20
 
         if not file_paths:
-            self.gif_data_file_path = filedialog.askopenfilenames(filetypes=[("All files", "*.*")])
+            self.data_file_path = filedialog.askopenfilenames(filetypes=[("All files", "*.*")])
         else:
-            self.gif_data_file_path = file_paths
+            self.data_file_path = file_paths
 
-        if len(self.gif_data_file_path) > MAX_FILES:
-            messagebox.showerror("Error", f"You can only select up to {MAX_FILES} files at a time.")
-            self.gif_data_file_path = []
-            self.gif_data_file_status.configure(text="No files selected", text_color="red")
+        if len(self.data_file_path) > MAX_FILES:
+            messagebox.showerror("Error", f"You Can Only Select Up to {MAX_FILES} Files at a Time.")
+            self.data_file_path = []
+            self.data_file_status.configure(text="No Files Selected", text_color="red")
             return
 
         # Check file sizes
         total_size = 0
         oversized_files = []
-        for path in self.gif_data_file_path:
+        for path in self.data_file_path:
             file_size = os.path.getsize(path)
             if file_size > MAX_FILE_SIZE:
                 oversized_files.append(f"'{os.path.basename(path)}' ({file_size / (1024*1024):.1f} MB)")
@@ -1368,208 +819,24 @@ class SteganographyApp:
             if total_size > MAX_TOTAL_SIZE:
                 messagebox.showerror("Error", 
                     f"Total size of selected files ({total_size / (1024*1024):.1f} MB) "
-                    f"exceeds the maximum limit of {MAX_TOTAL_SIZE / (1024*1024):.1f} MB")
-                self.gif_data_file_path = []
-                self.gif_data_file_status.configure(text="No files selected", text_color="red")
+                    f"Exceeds The Maximum Limit of {MAX_TOTAL_SIZE / (1024*1024):.1f} MB")
+                self.data_file_path = []
+                self.data_file_status.configure(text="No Files Selected", text_color="red")
                 return
 
         if oversized_files:
             messagebox.showerror("Error",
-                f"The following files exceed the {MAX_FILE_SIZE / (1024*1024):.1f} MB per-file limit:\n\n" +
+                f"The Following Files Exceed The {MAX_FILE_SIZE / (1024*1024):.1f} MB Per-File Limit:\n\n" +
                 "\n".join(oversized_files))
-            self.gif_data_file_path = []
-            self.gif_data_file_status.configure(text="No files selected", text_color="red")
+            self.data_file_path = []
+            self.data_file_status.configure(text="No Files Selected", text_color="red")
             return
 
-        self.gif_data_file_status.configure(
-            text=f"{len(self.gif_data_file_path)} files selected (Total: {total_size / (1024*1024):.1f} MB)" 
-            if self.gif_data_file_path else "No files selected",
-            text_color="green" if self.gif_data_file_path else "red"
+        self.data_file_status.configure(
+            text=f"{len(self.data_file_path)} Files Selected (Total: {total_size / (1024*1024):.1f} MB)" 
+            if self.data_file_path else "No Files Selected",
+            text_color="green" if self.data_file_path else "red"
         )
-        self.update_estimated_times()
-
-    def update_progress(self, value):
-        """Update the progress bar value and label."""
-        self.progress.set(value / 100)  # CustomTkinter progress bars use 0-1 range
-        self.progress_label.configure(text=f"Progress: {value}%")
-        # Force update to ensure progress is displayed immediately
-        self.root.update_idletasks()
-
-    def update_gif_progress(self, value):
-        """Update the GIF progress bar value and label."""
-        self.gif_progress.set(value / 100)
-        self.gif_progress_label.configure(text=f"Progress: {value}%")
-        # Force update to ensure progress is displayed immediately
-        self.root.update_idletasks()
-
-    def reset_fields(self):
-        """Reset all fields to their initial state for image stego."""
-        # Reset operation flag first
-        self.operation_in_progress = False
-        
-        # Reset data paths and states
-        self.carrier_image_path = None
-        self.data_file_path = None
-        self.stego_image = None
-        self.carrier_image_hash = None
-        
-        # Reset progress bar
-        self.progress.set(0)
-        self.progress_label.configure(text="Progress: 0%")
-        self.root.update_idletasks()
-        
-        # Reset status labels to initial state
-        self.carrier_image_status.configure(text="No image selected", text_color="red")
-        self.data_file_status.configure(text="No files selected", text_color="red")
-        
-        # Reset estimates
-        self.estimates_visible = False
-        if hasattr(self, 'estimates_label'):
-            self.estimates_label.pack_forget()
-        
-        # Clear and disable all input fields with proper initial state
-        self.key_entry.delete(0, "end")
-        self.key_entry.configure(
-            state="disabled",
-            placeholder_text="",
-            fg_color="#2b2b2b",
-            bg_color="#2b2b2b",
-            text_color="gray70" , 
-            show="*"
-        )
-        
-        self.password_entry.delete(0, "end")
-        self.password_entry.configure(
-            state="disabled",
-            placeholder_text="",
-            fg_color="#2b2b2b",
-            bg_color="#2b2b2b",
-            text_color="gray70",
-            show="*"  # Ensure password masking is set
-        )
-        
-        self.author_entry.delete(0, "end")
-        self.author_entry.configure(
-            state="disabled",
-            placeholder_text="",
-            fg_color="#2b2b2b",
-            bg_color="#2b2b2b",
-            text_color="gray70"
-        )
-        
-        self.root.focus_set()
-
-        # Disable all action buttons and reset their appearance
-        self.embed_button.configure(
-            state="disabled",
-            text_color_disabled="#8fbf8f"
-        )
-        self.extract_button.configure(
-            state="disabled",
-            text_color_disabled="#8fbf8f"
-        )
-        self.metadata_button.configure(
-            state="disabled",
-            text_color_disabled="#8fbf8f"
-        )
-        self.generate_key_button.configure(
-            state="disabled",
-            text_color_disabled="#8fbf8f"
-        )
-        
-        # Enable the browse button
-        self.load_image_button.configure(state="normal")
-        
-        # Final UI update
-        self.root.update_idletasks()
-
-    def reset_gif_fields(self):
-        """Reset all fields to their initial state for GIF stego."""
-        # Reset operation flag first
-        self.operation_in_progress = False
-        
-        # Reset data paths and states
-        self.carrier_gif_path = None
-        self.gif_data_file_path = None
-        self.carrier_gif_hash = None
-        
-        # Reset progress bar
-        self.gif_progress.set(0)
-        self.gif_progress_label.configure(text="Progress: 0%")
-        self.root.update_idletasks()
-        
-        # Reset status labels to initial state
-        self.carrier_gif_status.configure(text="No GIF selected", text_color="red")
-        self.gif_data_file_status.configure(text="No files selected", text_color="red")
-        
-        # Reset estimates
-        self.estimates_visible = False
-        if hasattr(self, 'gif_estimates_label'):
-            self.gif_estimates_label.pack_forget()
-        
-        # Clear and disable all input fields with proper initial state
-        self.gif_key_entry.delete(0, "end")
-        self.gif_key_entry.configure(
-            state="disabled",
-            placeholder_text="",
-            fg_color="#2b2b2b",
-            bg_color="#2b2b2b",
-            text_color="gray70" , 
-            show="*"
-        )
-        
-        self.gif_password_entry.delete(0, "end")
-        self.gif_password_entry.configure(
-            state="disabled",
-            placeholder_text="",
-            fg_color="#2b2b2b",
-            bg_color="#2b2b2b",
-            text_color="gray70",
-            show="*"  # Ensure password masking is set
-        )
-        
-        self.gif_author_entry.delete(0, "end")
-        self.gif_author_entry.configure(
-            state="disabled",
-            placeholder_text="",
-            fg_color="#2b2b2b",
-            bg_color="#2b2b2b",
-            text_color="gray70"
-        )
-
-        self.root.focus_set()
-
-        # Disable all action buttons and reset their appearance
-        self.gif_embed_button.configure(
-            state="disabled",
-            text_color_disabled="#8fbf8f"
-        )
-        self.gif_extract_button.configure(
-            state="disabled",
-            text_color_disabled="#8fbf8f"
-        )
-        self.gif_metadata_button.configure(
-            state="disabled",
-            text_color_disabled="#8fbf8f"
-        )
-        self.gif_generate_key_button.configure(
-            state="disabled",
-            text_color_disabled="#8fbf8f"
-        )
-        
-        # Enable the browse button
-        self.load_gif_button.configure(state="normal")
-        
-        # Final UI update
-        self.root.update_idletasks()
-
-    def set_button_state(self, button, state, operation=False):
-        """Set button state and update operation in progress flag."""
-        button.configure(state=state)
-        if operation:
-            self.operation_in_progress = (state == "disabled")
-        self.root.update_idletasks()  # Force UI update
-
     def start_embed(self):
         """Start the embedding process."""
         if self.operation_in_progress:
@@ -1577,20 +844,26 @@ class SteganographyApp:
             
         # Check for carrier image first
         if not self.carrier_image_path:
-            messagebox.showerror("Error", "Please select a carrier image first.")
+            messagebox.showerror("Error", "Please Select a Carrier Image.")
             return
             
         # Check for data files
         if not self.data_file_path:
-            messagebox.showerror("Error", "Please select one or more data files to embed.")
+            messagebox.showerror("Error", "Please Select One or More Data Files to Embed.")
             return
 
         # Check for encryption key
         key_str = self.key_entry.get().strip()
         if not key_str:
-            messagebox.showerror("Error", "Please generate or enter an encryption key.")
+            messagebox.showerror("Error", "Please Generate or Enter an Encryption Key.")
             return
-            
+        
+        # Check for password
+        password = self.password_entry.get().strip()
+        if not password:
+            messagebox.showerror("Error", "Please Enter a Password.")
+            return
+        
         # Validate password and author inputs
         valid, password, author = self.validate_inputs(self.password_entry, self.author_entry, for_embedding=True)
         if not valid:
@@ -1614,7 +887,7 @@ class SteganographyApp:
             with open(self.carrier_image_path, "rb") as f:
                 current_hash = hashlib.sha256(f.read()).hexdigest()
             if self.carrier_image_hash != current_hash:
-                messagebox.showerror("Error", "Carrier image has been modified since loading!")
+                messagebox.showerror("Error", "Carrier Image has been Modified since Loading!")
                 self.root.after(0, lambda: self.update_progress(0))
                 self.set_button_state(self.embed_button, "normal", operation=True)
                 return
@@ -1622,7 +895,7 @@ class SteganographyApp:
             # Get encryption key
             key_str = self.key_entry.get().strip()
             if not key_str:
-                messagebox.showerror("Error", "Please provide a valid encryption key.")
+                messagebox.showerror("Error", "Please Provide a valid encryption key.")
                 self.root.after(0, lambda: self.update_progress(0))
                 self.set_button_state(self.embed_button, "normal", operation=True)
                 return
@@ -1636,7 +909,6 @@ class SteganographyApp:
             # Update operation type and estimates
             self.current_operation = "embed"
             self.estimates_visible = True
-            self.update_estimated_times()
 
             # Embed the data
             self.stego_image = self.image_logic.embed_data(
@@ -1683,7 +955,7 @@ class SteganographyApp:
 
         except Exception as e:
             logging.error(f"Embedding failed: {str(e)}")
-            self.root.after(0, lambda: messagebox.showerror("Error", f"Embedding failed: {str(e)}"))
+            self.root.after(0, lambda: messagebox.showerror("Error", f"Image Embedding Failed"))
             self.root.after(0, lambda: self.update_progress(0))
             self.root.after(0, self.reset_fields)
         finally:
@@ -1696,19 +968,19 @@ class SteganographyApp:
 
         # Check for carrier image first
         if not self.carrier_image_path:
-            messagebox.showerror("Error", "Please select a carrier image first.")
+            messagebox.showerror("Error", "Please Select a Carrier Image.")
             return
 
         # Check for encryption key
         key_str = self.key_entry.get().strip()
         if not key_str:
-            messagebox.showerror("Error", "Please generate or enter an encryption key first.")
+            messagebox.showerror("Error", "Please Generate or Enter an Encryption Key.")
             return
 
         # Check for password
         password = self.password_entry.get().strip()
         if not password:
-            messagebox.showerror("Error", "Please enter the password used during embedding.")
+            messagebox.showerror("Error", "Please Enter the Password Used During Embedding.")
             return
 
         # If all checks pass, proceed with validation and extraction
@@ -1749,7 +1021,7 @@ class SteganographyApp:
 
             self.current_operation = "extract"
             self.estimates_visible = True
-            self.update_estimated_times()
+
 
             files_data, author, timestamp_readable = self.image_logic.extract_data(
                 self.carrier_image_path,
@@ -1812,7 +1084,7 @@ class SteganographyApp:
         self.set_button_state(self.metadata_button, "disabled", operation=True)
         
         if not self.carrier_image_path:
-            messagebox.showerror("Error", "Please select a carrier image first.")
+            messagebox.showerror("Error", "Please Select a Carrier Image.")
             self.set_button_state(self.metadata_button, "normal", operation=True)
             return
         
@@ -1822,7 +1094,7 @@ class SteganographyApp:
             # First check if this is a steganography image
             is_stego, message = self.detect_image_steganography(self.carrier_image_path)
             if not is_stego:
-                messagebox.showinfo("Information", "This is not a stego image.")
+                messagebox.showinfo("Information", "This Is Not a Steganography Image.")
                 self.update_progress(0)
                 self.set_button_state(self.metadata_button, "normal", operation=True)
                 return
@@ -1832,13 +1104,18 @@ class SteganographyApp:
             # Get encryption key
             key_str = self.key_entry.get().strip()
             if not key_str:
-                messagebox.showerror("Error", "Please provide an encryption key.")
+                messagebox.showerror("Error", "Please Provide an Encryption Key.")
                 self.update_progress(0)
                 self.set_button_state(self.metadata_button, "normal", operation=True)
                 return
                 
             # Get password if provided
             password = self.password_entry.get().strip()
+            if not password:
+                messagebox.showerror("Error", "Please Enter The Password Used During Embedding.")
+                self.update_progress(0)
+                self.set_button_state(self.metadata_button, "normal", operation=True)
+                return
             
             self.update_progress(20)
             
@@ -1883,359 +1160,19 @@ class SteganographyApp:
                 
                 # Check for specific errors
                 if "key mismatch" in error_str or "incorrect key" in error_str:
-                    messagebox.showerror("Error", "The key is incorrect.")
+                    messagebox.showerror("Error", "The Encryption Key or The Password is Incorrect.")
                 elif "password mismatch" in error_str or "incorrect password" in error_str:
-                    messagebox.showerror("Error", "The password is incorrect.")
+                    messagebox.showerror("Error", "The Encryption Key or The Password is Incorrect.")
                 else:
-                    messagebox.showerror("Error", f"Error reading metadata: {str(extract_error)}")
+                    messagebox.showerror("Error", f"Error Reading Image Metadata")
             
         except Exception as e:
-            logging.error(f"Failed to view metadata: {str(e)}")
-            messagebox.showerror("Error", f"Failed to view metadata: {str(e)}")
+            logging.error(f"Failed to view Image Metadata")
+            messagebox.showerror("Error", f"Failed to view Image Metadata")
             
         finally:
             self.update_progress(0)
             self.set_button_state(self.metadata_button, "normal", operation=True)
-
-    def start_gif_embed(self):
-        """Start the GIF embedding process."""
-        if self.operation_in_progress:
-            return
-
-        # Check for carrier GIF first
-        if not self.carrier_gif_path:
-            messagebox.showerror("Error", "Please select a carrier GIF first.")
-            return
-
-        # Check for data files
-        if not self.gif_data_file_path:
-            messagebox.showerror("Error", "Please select files to hide first.")
-            return
-
-        # Check for encryption key
-        key_str = self.gif_key_entry.get().strip()
-        if not key_str:
-            messagebox.showerror("Error", "Please generate or enter an encryption key first.")
-            return
-
-        # Check for password
-        password = self.gif_password_entry.get().strip()
-        if not password:
-            messagebox.showerror("Error", "Please enter a password for embedding.")
-            return
-
-        # If all checks pass, proceed with validation and embedding
-        valid, password, author = self.validate_inputs(self.gif_password_entry, self.gif_author_entry)
-        if not valid:
-            return
-        threading.Thread(target=lambda: self._gif_embed_data_thread(password, author), daemon=True).start()
-
-    def _gif_embed_data_thread(self, password, author):
-        """Embed data into the carrier GIF in a separate thread."""
-        self.set_button_state(self.gif_embed_button, "disabled", operation=True)
-        try:
-            # Validate carrier and data file paths
-            if not self.carrier_gif_path or not self.gif_data_file_path:
-                messagebox.showerror("Error", "Missing carrier GIF or data files.")
-                self.root.after(0, lambda: self.update_gif_progress(0))
-                self.set_button_state(self.gif_embed_button, "normal", operation=True)
-                return
-
-            # Verify carrier GIF hash
-            with open(self.carrier_gif_path, "rb") as f:
-                current_hash = hashlib.sha256(f.read()).hexdigest()
-            if self.carrier_gif_hash != current_hash:
-                messagebox.showerror("Error", "Carrier GIF has been modified since loading!")
-                self.root.after(0, lambda: self.update_gif_progress(0))
-                self.set_button_state(self.gif_embed_button, "normal", operation=True)
-                return
-
-            # Get encryption key
-            key_str = self.gif_key_entry.get().strip()
-            if not key_str:
-                messagebox.showerror("Error", "Please provide a valid encryption key.")
-                self.root.after(0, lambda: self.update_gif_progress(0))
-                self.set_button_state(self.gif_embed_button, "normal", operation=True)
-                return
-
-            # Initialize cipher with the key
-            if not self.gif_logic.get_cipher(key_str, self.root):
-                self.root.after(0, lambda: self.update_gif_progress(0))
-                self.set_button_state(self.gif_embed_button, "normal", operation=True)
-                return
-
-            # Update operation type and estimates
-            self.current_operation = "embed"
-            self.estimates_visible = True
-            self.update_estimated_times()
-
-            # Embed the data
-            output_data = self.gif_logic.embed_data(
-                self.carrier_gif_path,
-                self.gif_data_file_path,
-                key_str,
-                password,
-                author,
-                lambda value: self.root.after(0, lambda v=value: self.update_gif_progress(v))
-            )
-
-            # Prompt user to save the embedded GIF - pass output_data as a parameter to avoid scope issues
-            def save_stego_gif(embedded_data):
-                save_path = filedialog.asksaveasfilename(
-                    defaultextension=".gif",
-                    filetypes=[("GIF files", "*.gif")],
-                    initialfile=""  # Empty initial filename
-                )
-                
-                if save_path:
-                    # Save the embedded GIF
-                    with open(save_path, "wb") as output_file:
-                        output_file.write(embedded_data)
-                    self.update_gif_progress(100)
-                    messagebox.showinfo("Success", f"{len(self.gif_data_file_path)} files embedded successfully!")
-                    self.history_manager.add_entry(
-                        "Embed",
-                        f"Embedded {len(self.gif_data_file_path)} files into {save_path} (GIF-Stego)"
-                    )
-                    self.update_history_view()
-                    self.root.after(100, self.reset_gif_fields)
-                else:
-                    # User canceled saving
-                    messagebox.showinfo("Cancelled", "Embedding operation cancelled by user.")
-                    # Reset progress bar only
-                    self.root.after(0, lambda: self.update_gif_progress(0))
-                    # Force garbage collection to free memory
-                    import gc
-                    gc.collect()
-            
-            # Schedule save dialog on the main thread with the output_data as an argument
-            self.root.after(0, lambda: save_stego_gif(output_data))
-
-        except Exception as e:
-            logging.error(f"Embedding failed: {str(e)}")
-            messagebox.showerror("Error", f"Embedding failed: {str(e)}")
-            self.update_gif_progress(0)
-            self.root.after(0, self.reset_gif_fields)
-        finally:
-            self.set_button_state(self.gif_embed_button, "normal", operation=True)
-
-    def start_gif_extract(self):
-        """Start the GIF extraction process."""
-        if self.operation_in_progress:
-            return
-
-        # Check for carrier GIF first
-        if not self.carrier_gif_path:
-            messagebox.showerror("Error", "Please select a carrier GIF first.")
-            return
-
-        # Check for encryption key
-        key_str = self.gif_key_entry.get().strip()
-        if not key_str:
-            messagebox.showerror("Error", "Please generate or enter an encryption key first.")
-            return
-
-        # Check for password
-        password = self.gif_password_entry.get().strip()
-        if not password:
-            messagebox.showerror("Error", "Please enter the password used during embedding.")
-            return
-
-        # If all checks pass, proceed with validation and extraction
-        valid, password, author = self.validate_inputs(self.gif_password_entry, self.gif_author_entry, for_embedding=False)
-        if not valid:
-            return
-        threading.Thread(target=lambda: self._gif_extract_data_thread(password), daemon=True).start()
-
-    def _gif_extract_data_thread(self, password):
-        self.set_button_state(self.gif_extract_button, "disabled", operation=True)
-        if not self.carrier_gif_path:
-            messagebox.showerror("Error", "Select a carrier GIF.")
-            self.root.after(0, lambda: self.update_gif_progress(0))  # Reset progress on error
-            self.set_button_state(self.gif_extract_button, "normal", operation=True)
-            return
-
-        with open(self.carrier_gif_path, "rb") as f:
-            current_hash = hashlib.sha256(f.read()).hexdigest()
-        if self.carrier_gif_hash != current_hash:
-            messagebox.showerror("Error", "Carrier GIF has been modified since loading!")
-            self.root.after(0, lambda: self.update_gif_progress(0))  # Reset progress on error
-            self.set_button_state(self.gif_extract_button, "normal", operation=True)
-            return
-
-        key_str = self.gif_key_entry.get().strip()
-        if not key_str:
-            messagebox.showerror("Error", "Please provide a valid encryption key.")
-            self.root.after(0, lambda: self.update_gif_progress(0))  # Reset progress on error
-            self.set_button_state(self.gif_extract_button, "normal", operation=True)
-            return
-
-        if not self.gif_logic.get_cipher(key_str, self.root):
-            self.root.after(0, lambda: self.update_gif_progress(0))  # Reset progress on error
-            self.set_button_state(self.gif_extract_button, "normal", operation=True)
-            return
-
-        self.current_operation = "extract"
-        self.estimates_visible = True
-        self.update_estimated_times()
-
-        try:
-            files_data, author, timestamp = self.gif_logic.extract_data(
-                self.carrier_gif_path, key_str, password,
-                lambda value: self.root.after(0, lambda v=value: self.update_gif_progress(v))
-            )
-
-            output_folder = filedialog.askdirectory(title="Select Output Folder")
-            if not output_folder:
-                self.root.after(0, lambda: messagebox.showinfo("Cancelled", "Extraction cancelled by user."))
-                self.root.after(0, lambda: self.update_gif_progress(0))
-                self.root.after(0, self.reset_gif_fields)  # Reset immediately when cancelled
-                self.set_button_state(self.gif_extract_button, "normal", operation=True)
-                return
-
-            carrier_filename = os.path.splitext(os.path.basename(self.carrier_gif_path))[0]
-            extraction_time = datetime.now().strftime('%Y%m%d_%H%M%S')
-            subfolder_name = f"Extracted_{carrier_filename}_{extraction_time}"
-            output_subfolder = os.path.join(output_folder, subfolder_name)
-            os.makedirs(output_subfolder, exist_ok=True)
-
-            for i, (filename, ext, file_data) in enumerate(files_data):
-                output_filename = f"{filename.strip()}{ext.strip()}"
-                output_filename = "".join(c for c in output_filename if c.isalnum() or c in ('.', '_', '-'))
-                output_path = os.path.join(output_subfolder, output_filename)
-                with open(output_path, "wb") as output_file:
-                    output_file.write(file_data)
-                self.root.after(0, lambda v=75 + (25 * (i + 1) // len(files_data)): self.update_gif_progress(v))
-
-            self.root.after(0, lambda: self.update_gif_progress(100))
-            self.root.after(0, lambda: messagebox.showinfo(
-                "Success",
-                f"Extracted {len(files_data)} files to {output_subfolder}\n\n"
-                f"Metadata:\nAuthor: {author}\nTimestamp: {timestamp}"
-            ))
-            self.history_manager.add_entry(
-                "Extract",
-                f"Extracted {len(files_data)} files from {self.carrier_gif_path} to {output_subfolder} (GIF-Stego)"
-            )
-            self.update_history_view()
-            self.root.after(0, self.reset_gif_fields)  # Reset immediately after success
-
-        except Exception as e:
-            logging.error(f"Extraction failed: {str(e)}")
-            self.root.after(0, lambda: messagebox.showerror("Error", f"Extraction failed: {str(e)}"))
-            self.root.after(0, lambda: self.update_gif_progress(0))
-            self.root.after(0, self.reset_gif_fields)  # Reset immediately on error
-        finally:
-            self.set_button_state(self.gif_extract_button, "normal", operation=True)
-
-    def start_gif_view_metadata(self):
-        """Start the GIF metadata viewing process."""
-        if self.operation_in_progress:
-            return
-        threading.Thread(target=self._gif_view_metadata_thread, daemon=True).start()
-
-    def _gif_view_metadata_thread(self):
-        """View metadata from a stego GIF in a separate thread."""
-        self.set_button_state(self.gif_metadata_button, "disabled", operation=True)
-        
-        if not self.carrier_gif_path:
-            messagebox.showerror("Error", "Please select a carrier GIF first.")
-            self.set_button_state(self.gif_metadata_button, "normal", operation=True)
-            return
-        
-        try:
-            self.update_gif_progress(10)
-            
-            # First check if this is a steganography GIF
-            is_stego, message = self.detect_gif_steganography(self.carrier_gif_path)
-            if not is_stego:
-                messagebox.showinfo("Information", "This is not a stego GIF.")
-                self.update_gif_progress(0)
-                self.set_button_state(self.gif_metadata_button, "normal", operation=True)
-                return
-            else:
-                print("[STEGO DETECTION] This is a stego GIF.")
-                
-            # Get encryption key
-            key_str = self.gif_key_entry.get().strip()
-            if not key_str:
-                messagebox.showerror("Error", "Please provide an encryption key.")
-                self.update_gif_progress(0)
-                self.set_button_state(self.gif_metadata_button, "normal", operation=True)
-                return
-                
-            # Get password if provided
-            gif_password = self.gif_password_entry.get().strip()
-            if not gif_password:
-                messagebox.showerror("Error", "Please provide a password.")
-                self.update_gif_progress(0)
-                self.set_button_state(self.gif_metadata_button, "normal", operation=True)
-                return
-            
-            self.update_gif_progress(20)
-            
-            # Initialize cipher with the key
-            if not self.gif_logic.get_cipher(key_str, self.root):
-                self.update_gif_progress(0)
-                self.set_button_state(self.gif_metadata_button, "normal", operation=True)
-                return
-                
-            self.update_gif_progress(30)
-            
-            # Try to view metadata
-            try:
-                # Use gif_logic to extract metadata
-                author, timestamp, file_count = self.gif_logic.view_metadata(
-                    self.carrier_gif_path,
-                    key_str,
-                    gif_password,
-                    lambda value: self.root.after(0, lambda v=value: self.update_gif_progress(v))
-                )
-                
-                self.update_gif_progress(100)
-                
-                # Display the metadata
-                messagebox.showinfo(
-                    "Metadata Information",
-                    f"Metadata Successfully Extracted!\n\n"
-                    f"File Contains {file_count} Embedded Files\n"
-                    f"Author: {author}\n"
-                    f"Timestamp: {timestamp}"
-                )
-                
-                self.history_manager.add_entry(
-                    "View Metadata",
-                    f"Viewed metadata from {self.carrier_gif_path} (GIF-Stego)"
-                )
-                self.update_history_view()
-                
-            except ValueError as extract_error:
-                error_str = str(extract_error).lower()
-                
-                # Check for specific errors
-                if "incorrect encryption key" in error_str or "key mismatch" in error_str:
-                    messagebox.showerror("Error", "The key is incorrect.")
-                elif "incorrect password" in error_str or "password mismatch" in error_str:
-                    messagebox.showerror("Error", "The password is incorrect.")
-                else:
-                    messagebox.showerror("Error", f"Error reading metadata: {str(extract_error)}")
-            
-        except Exception as e:
-            logging.error(f"Failed to view metadata: {str(e)}")
-            messagebox.showerror("Error", f"Failed to view metadata: {str(e)}")
-            
-        finally:
-            self.update_gif_progress(0)
-            self.set_button_state(self.gif_metadata_button, "normal", operation=True)
-
-    def cleanup(self):
-        """Clean up resources before closing the application."""
-        self.carrier_image_path = None
-        self.carrier_gif_path = None
-        self.data_file_path = None
-        self.gif_data_file_path = None
-        self.stego_image = None
-        gc.collect()
 
     def detect_image_steganography(self, image_path):
         """Detect if an image contains hidden data using our LSB steganography technique.
@@ -2326,6 +1263,549 @@ class SteganographyApp:
             print(f"[StegoDetector] Error during detection: {str(e)}")
             return False, f"Detection error: {str(e)}"
 
+
+    def _load_carrier_gif_thread(self, new_path):
+        """Thread to load a carrier GIF."""
+        try:
+            # Verify the GIF is valid
+            if not self.validate_gif(new_path):
+                # Reset function is called inside validate_gif if it fails
+                return
+                
+            # Update the carrier path and start loading
+            self.carrier_gif_path = new_path
+            self._load_carrier_gif()
+            
+        except Exception as e:
+            logging.error(f"Failed to load carrier GIF")
+            self.root.after(0, lambda: messagebox.showerror("Error", f"Failed to Load GIF"))
+            # Reset all fields regardless of whether there was a previous GIF
+            self.root.after(0, self.reset_gif_fields)
+        finally:
+            self.root.after(0, lambda: self.load_gif_button.configure(state="normal"))
+
+    def _load_carrier_gif(self):
+        """Load the carrier GIF and compute its hash."""
+        with self.gif_load_lock:
+            try:
+                with open(self.carrier_gif_path, "rb") as f:
+                    self.carrier_gif_hash = hashlib.sha256(f.read()).hexdigest()
+                
+                # Update status and enable buttons
+                gif_filename = os.path.basename(self.carrier_gif_path)
+                self.root.after(0, lambda: self.carrier_gif_status.configure(
+                    text=f"GIF selected ({gif_filename})", 
+                    text_color="green"
+                ))
+                
+                # Check if this is a steganography GIF (without showing UI notifications)
+                is_stego, _ = self.detect_gif_steganography(self.carrier_gif_path)
+                if is_stego:
+                    print("[STEGO DETECTION] This is a stego GIF.")
+                else:
+                    print("[STEGO DETECTION] This is not a stego GIF.")
+                
+                # Enable buttons when GIF is loaded successfully
+                self.root.after(0, lambda: self.gif_embed_button.configure(state="normal"))
+                self.root.after(0, lambda: self.gif_extract_button.configure(state="normal"))
+                self.root.after(0, lambda: self.gif_metadata_button.configure(state="normal"))
+                self.root.after(0, lambda: self.gif_generate_key_button.configure(state="normal"))
+                
+                # Enable input fields with updated placeholders
+                self.root.after(0, lambda: self.gif_key_entry.configure(
+                    state="normal", 
+                    placeholder_text="Enter or generate a key" , 
+                    show="*"
+                ))
+                self.root.after(0, lambda: self.gif_password_entry.configure(
+                    state="normal", 
+                    placeholder_text="Enter password (optional)" , 
+                    show="*"
+                ))
+                self.root.after(0, lambda: self.gif_author_entry.configure(
+                    state="normal", 
+                    placeholder_text="Enter author name (optional)"
+                ))
+                
+            except Exception as e:
+                self.root.after(0, lambda: messagebox.showerror("Error", f"Failed to Load GIF"))
+                self.root.after(0, lambda: self.carrier_gif_status.configure(
+                    text=f"Failed to Load GIF", 
+                    text_color="red"
+                ))
+                
+                # Reset all fields to initial state instead of just disabling buttons
+                self.root.after(0, self.reset_gif_fields)
+                
+            finally:
+                self.root.after(0, lambda: self.load_gif_button.configure(state="normal"))
+
+
+    def drop_carrier_gif(self, event):
+        """Handle dropped files for carrier GIF."""
+        if self.operation_in_progress or self.gif_load_lock.locked():
+            messagebox.showwarning("Warning", "Please wait for the current operation to finish.")
+            return
+
+        files = self.root.splitlist(event.data)
+        if len(files) > 1:
+            messagebox.showerror("Error", "Please Drop Only One GIF File.")
+            return
+
+        file_path = files[0]
+        if not file_path.lower().endswith('.gif'):
+            messagebox.showerror("Error", "Please Drop a GIF File.")
+            return
+
+        self.carrier_gif_path = file_path
+        self.carrier_gif_status.configure(text="Loading...", text_color="yellow")
+        self.load_gif_button.configure(state="disabled")
+        threading.Thread(target=self._load_carrier_gif, daemon=True).start()
+
+    def load_carrier_gif(self, file_path=None):
+        """Load the carrier GIF and compute its hash for integrity."""
+        if self.operation_in_progress or self.gif_load_lock.locked():
+            messagebox.showwarning("Warning", "Please wait for the current operation to finish.")
+            return
+
+        if not file_path:
+            new_path = filedialog.askopenfilename(filetypes=[("GIF files", "*.gif")])
+            # If user cancels, reset everything
+            if not new_path:
+                self.reset_gif_fields()
+                return
+            self.carrier_gif_path = new_path
+        else:
+            self.carrier_gif_path = file_path
+
+        if not self.validate_gif(self.carrier_gif_path):
+            messagebox.showerror("Error", "Invalid GIF format!")
+            self.carrier_gif_path = None
+            self.carrier_gif_status.configure(text="No GIF selected", text_color="red")
+
+            return
+
+        self.carrier_gif_status.configure(text="Loading...", text_color="yellow")
+        self.load_gif_button.configure(state="disabled")
+        threading.Thread(target=self._load_carrier_gif, daemon=True).start()
+
+    def drop_gif_data_file(self, event):
+        """Handle dropped files for data to hide in GIF-Stego."""
+        MAX_FILES = 20
+        MAX_FILE_SIZE = 500 * 1024 * 1024  # 500 MB per file for GIFs
+        MAX_TOTAL_SIZE = 500 * 1024 * 1024  # 500 MB total
+
+        files = self.root.splitlist(event.data)
+        if len(files) > MAX_FILES:
+            messagebox.showerror("Error", f"You Can Only Select Up to {MAX_FILES} Files at a Time.")
+            return
+
+        # Check file sizes
+        total_size = 0
+        oversized_files = []
+        for path in files:
+            file_size = os.path.getsize(path)
+            if file_size > MAX_FILE_SIZE:
+                oversized_files.append(f"'{os.path.basename(path)}' ({file_size / (1024*1024):.1f} MB)")
+            total_size += file_size
+            if total_size > MAX_TOTAL_SIZE:
+                messagebox.showerror("Error", 
+                    f"Total size of Dropped Files ({total_size / (1024*1024):.1f} MB) "
+                    f"Exceeds the Maximum Limit of {MAX_TOTAL_SIZE / (1024*1024):.1f} MB")
+                return
+
+        if oversized_files:
+            messagebox.showerror("Error",
+                f"The Following Files Exceed the {MAX_FILE_SIZE / (1024*1024):.1f} MB Per-File Limit:\n\n" +
+                "\n".join(oversized_files))
+            return
+
+        self.gif_data_file_path = files
+        self.gif_data_file_status.configure(
+            text=f"{len(self.gif_data_file_path)} Files Selected (Total: {total_size / (1024*1024):.1f} MB)" 
+            if self.gif_data_file_path else "No Files Selected",
+            text_color="green" if self.gif_data_file_path else "red"
+        )
+
+
+    def load_gif_data_file(self, file_paths=None):
+        """Load data files to embed for GIF stego."""
+        MAX_FILE_SIZE = 500 * 1024 * 1024  # 500 MB per file for GIFs
+        MAX_TOTAL_SIZE = 500 * 1024 * 1024  # 500 MB total
+        MAX_FILES = 20
+
+        if not file_paths:
+            self.gif_data_file_path = filedialog.askopenfilenames(filetypes=[("All files", "*.*")])
+        else:
+            self.gif_data_file_path = file_paths
+
+        if len(self.gif_data_file_path) > MAX_FILES:
+            messagebox.showerror("Error", f"You Can Only Select Up to {MAX_FILES} Files at a Time.")
+            self.gif_data_file_path = []
+            self.gif_data_file_status.configure(text="No Files Selected", text_color="red")
+            return
+
+        # Check file sizes
+        total_size = 0
+        oversized_files = []
+        for path in self.gif_data_file_path:
+            file_size = os.path.getsize(path)
+            if file_size > MAX_FILE_SIZE:
+                oversized_files.append(f"'{os.path.basename(path)}' ({file_size / (1024*1024):.1f} MB)")
+            total_size += file_size
+            if total_size > MAX_TOTAL_SIZE:
+                messagebox.showerror("Error", 
+                    f"Total size of Selected Files ({total_size / (1024*1024):.1f} MB) "
+                    f"Exceeds the Maximum Limit of {MAX_TOTAL_SIZE / (1024*1024):.1f} MB")
+                self.gif_data_file_path = []
+                self.gif_data_file_status.configure(text="No Files Selected", text_color="red")
+                return
+
+        if oversized_files:
+            messagebox.showerror("Error",
+                f"The Following Files Exceed the {MAX_FILE_SIZE / (1024*1024):.1f} MB Per-File Limit:\n\n" +
+                "\n".join(oversized_files))
+            self.gif_data_file_path = []
+            self.gif_data_file_status.configure(text="No Files Selected", text_color="red")
+            return
+
+        self.gif_data_file_status.configure(
+            text=f"{len(self.gif_data_file_path)} Files Selected (Total: {total_size / (1024*1024):.1f} MB)" 
+            if self.gif_data_file_path else "No Files Selected",
+            text_color="green" if self.gif_data_file_path else "red"
+        )
+
+
+    def start_gif_embed(self):
+        """Start the GIF embedding process."""
+        if self.operation_in_progress:
+            return
+
+        # Check for carrier GIF first
+        if not self.carrier_gif_path:
+            messagebox.showerror("Error", "Please Select a Carrier GIF.")
+            return
+
+        # Check for data files
+        if not self.gif_data_file_path:
+            messagebox.showerror("Error", "Please Select Files to Hide.")
+            return
+
+        # Check for encryption key
+        key_str = self.gif_key_entry.get().strip()
+        if not key_str:
+            messagebox.showerror("Error", "Please Generate or Enter an Encryption Key.")
+            return
+
+        # Check for password
+        gif_password = self.gif_password_entry.get().strip()
+        if not gif_password:
+            messagebox.showerror("Error", "Please Enter a Password.")
+            return
+
+        # If all checks pass, proceed with validation and embedding
+        valid, gif_password, author = self.validate_inputs(self.gif_password_entry, self.gif_author_entry)
+        if not valid:
+            return
+        threading.Thread(target=lambda: self._gif_embed_data_thread(gif_password, author), daemon=True).start()
+
+    def _gif_embed_data_thread(self, password, author):
+        """Embed data into the carrier GIF in a separate thread."""
+        self.set_button_state(self.gif_embed_button, "disabled", operation=True)
+        try:
+            # Validate carrier and data file paths
+            if not self.carrier_gif_path or not self.gif_data_file_path:
+                messagebox.showerror("Error", "Missing carrier GIF or data files.")
+                self.root.after(0, lambda: self.update_gif_progress(0))
+                self.set_button_state(self.gif_embed_button, "normal", operation=True)
+                return
+
+            # Verify carrier GIF hash
+            with open(self.carrier_gif_path, "rb") as f:
+                current_hash = hashlib.sha256(f.read()).hexdigest()
+            if self.carrier_gif_hash != current_hash:
+                messagebox.showerror("Error", "Carrier GIF has been Modified Since Loading!")
+                self.root.after(0, lambda: self.update_gif_progress(0))
+                self.set_button_state(self.gif_embed_button, "normal", operation=True)
+                return
+
+            # Get encryption key
+            key_str = self.gif_key_entry.get().strip()
+            if not key_str:
+                messagebox.showerror("Error", "Please Provide a Valid Encryption Key.")
+                self.root.after(0, lambda: self.update_gif_progress(0))
+                self.set_button_state(self.gif_embed_button, "normal", operation=True)
+                return
+            # Initialize cipher with the key
+            if not self.gif_logic.get_cipher(key_str, self.root):
+                self.root.after(0, lambda: self.update_gif_progress(0))
+                self.set_button_state(self.gif_embed_button, "normal", operation=True)
+                return
+
+            # Update operation type and estimates
+            self.current_operation = "embed"
+            self.estimates_visible = True
+
+
+            # Embed the data
+            output_data = self.gif_logic.embed_data(
+                self.carrier_gif_path,
+                self.gif_data_file_path,
+                key_str,
+                password,
+                author,
+                lambda value: self.root.after(0, lambda v=value: self.update_gif_progress(v))
+            )
+
+            # Prompt user to save the embedded GIF - pass output_data as a parameter to avoid scope issues
+            def save_stego_gif(embedded_data):
+                save_path = filedialog.asksaveasfilename(
+                    defaultextension=".gif",
+                    filetypes=[("GIF files", "*.gif")],
+                    initialfile=""  # Empty initial filename
+                )
+                
+                if save_path:
+                    # Save the embedded GIF
+                    with open(save_path, "wb") as output_file:
+                        output_file.write(embedded_data)
+                    self.update_gif_progress(100)
+                    messagebox.showinfo("Success", f"{len(self.gif_data_file_path)} files embedded successfully!")
+                    self.history_manager.add_entry(
+                        "Embed",
+                        f"Embedded {len(self.gif_data_file_path)} files into {save_path} (GIF-Stego)"
+                    )
+                    self.update_history_view()
+                    self.root.after(100, self.reset_gif_fields)
+                else:
+                    # User canceled saving
+                    messagebox.showinfo("Cancelled", "Embedding operation cancelled by user.")
+                    # Reset progress bar only
+                    self.root.after(0, lambda: self.update_gif_progress(0))
+                    # Force garbage collection to free memory
+                    import gc
+                    gc.collect()
+            
+            # Schedule save dialog on the main thread with the output_data as an argument
+            self.root.after(0, lambda: save_stego_gif(output_data))
+
+        except Exception as e:
+            logging.error(f"Embedding failed: {str(e)}")
+            messagebox.showerror("Error", f"GIF Embedding Failed")
+            self.update_gif_progress(0)
+            self.root.after(0, self.reset_gif_fields)
+        finally:
+            self.set_button_state(self.gif_embed_button, "normal", operation=True)
+
+    def start_gif_extract(self):
+        """Start the GIF extraction process."""
+        if self.operation_in_progress:
+            return
+
+        # Check for carrier GIF first
+        if not self.carrier_gif_path:
+            messagebox.showerror("Error", "Please Select a Carrier GIF.")
+            return
+
+        # Check for encryption key
+        key_str = self.gif_key_entry.get().strip()
+        if not key_str:
+            messagebox.showerror("Error", "Please Generate or Enter an Encryption Key.")
+            return
+
+        # Check for password
+        password = self.gif_password_entry.get().strip()
+        if not password:
+            messagebox.showerror("Error", "Please Enter the Password Used During Embedding.")
+            return
+
+        # If all checks pass, proceed with validation and extraction
+        valid, password, author = self.validate_inputs(self.gif_password_entry, self.gif_author_entry, for_embedding=False)
+        if not valid:
+            return
+        threading.Thread(target=lambda: self._gif_extract_data_thread(password), daemon=True).start()
+
+    def _gif_extract_data_thread(self, password):
+        self.set_button_state(self.gif_extract_button, "disabled", operation=True)
+        if not self.carrier_gif_path:
+            messagebox.showerror("Error", "Select a carrier GIF.")
+            self.root.after(0, lambda: self.update_gif_progress(0))  # Reset progress on error
+            self.set_button_state(self.gif_extract_button, "normal", operation=True)
+            return
+
+        with open(self.carrier_gif_path, "rb") as f:
+            current_hash = hashlib.sha256(f.read()).hexdigest()
+        if self.carrier_gif_hash != current_hash:
+            messagebox.showerror("Error", "Carrier GIF has been modified since loading!")
+            self.root.after(0, lambda: self.update_gif_progress(0))  # Reset progress on error
+            self.set_button_state(self.gif_extract_button, "normal", operation=True)
+            return
+
+        key_str = self.gif_key_entry.get().strip()
+        if not key_str:
+            messagebox.showerror("Error", "Please Provide a Valid Encryption Key.")
+            self.root.after(0, lambda: self.update_gif_progress(0))  # Reset progress on error
+            self.set_button_state(self.gif_extract_button, "normal", operation=True)
+            return
+
+        if not self.gif_logic.get_cipher(key_str, self.root):
+            self.root.after(0, lambda: self.update_gif_progress(0))  # Reset progress on error
+            self.set_button_state(self.gif_extract_button, "normal", operation=True)
+            return
+
+        self.current_operation = "extract"
+        self.estimates_visible = True
+
+
+        try:
+            files_data, author, timestamp = self.gif_logic.extract_data(
+                self.carrier_gif_path, key_str, password,
+                lambda value: self.root.after(0, lambda v=value: self.update_gif_progress(v))
+            )
+
+            output_folder = filedialog.askdirectory(title="Select Output Folder")
+            if not output_folder:
+                self.root.after(0, lambda: messagebox.showinfo("Cancelled", "Extraction cancelled by user."))
+                self.root.after(0, lambda: self.update_gif_progress(0))
+                self.root.after(0, self.reset_gif_fields)  # Reset immediately when cancelled
+                self.set_button_state(self.gif_extract_button, "normal", operation=True)
+                return
+
+            carrier_filename = os.path.splitext(os.path.basename(self.carrier_gif_path))[0]
+            extraction_time = datetime.now().strftime('%Y%m%d_%H%M%S')
+            subfolder_name = f"Extracted_{carrier_filename}_{extraction_time}"
+            output_subfolder = os.path.join(output_folder, subfolder_name)
+            os.makedirs(output_subfolder, exist_ok=True)
+
+            for i, (filename, ext, file_data) in enumerate(files_data):
+                output_filename = f"{filename.strip()}{ext.strip()}"
+                output_filename = "".join(c for c in output_filename if c.isalnum() or c in ('.', '_', '-'))
+                output_path = os.path.join(output_subfolder, output_filename)
+                with open(output_path, "wb") as output_file:
+                    output_file.write(file_data)
+                self.root.after(0, lambda v=75 + (25 * (i + 1) // len(files_data)): self.update_gif_progress(v))
+
+            self.root.after(0, lambda: self.update_gif_progress(100))
+            self.root.after(0, lambda: messagebox.showinfo(
+                "Success",
+                f"Extracted {len(files_data)} files to {output_subfolder}\n\n"
+                f"Metadata:\nAuthor: {author}\nTimestamp: {timestamp}"
+            ))
+            self.history_manager.add_entry(
+                "Extract",
+                f"Extracted {len(files_data)} files from {self.carrier_gif_path} to {output_subfolder} (GIF-Stego)"
+            )
+            self.update_history_view()
+            self.root.after(0, self.reset_gif_fields)  # Reset immediately after success
+
+        except Exception as e:
+            logging.error(f"Extraction failed: {str(e)}")
+            self.root.after(0, lambda: messagebox.showerror("Error", f"GIF Extraction Failed"))
+            self.root.after(0, lambda: self.update_gif_progress(0))
+            self.root.after(0, self.reset_gif_fields)  # Reset immediately on error
+        finally:
+            self.set_button_state(self.gif_extract_button, "normal", operation=True)
+
+    def start_gif_view_metadata(self):
+        """Start the GIF metadata viewing process."""
+        if self.operation_in_progress:
+            return
+        threading.Thread(target=self._gif_view_metadata_thread, daemon=True).start()
+
+    def _gif_view_metadata_thread(self):
+        """View metadata from a stego GIF in a separate thread."""
+        self.set_button_state(self.gif_metadata_button, "disabled", operation=True)
+        
+        if not self.carrier_gif_path:
+            messagebox.showerror("Error", "Please Select a Carrier GIF.")
+            self.set_button_state(self.gif_metadata_button, "normal", operation=True)
+            return
+        
+        try:
+            self.update_gif_progress(10)
+            
+            # First check if this is a steganography GIF
+            is_stego, message = self.detect_gif_steganography(self.carrier_gif_path)
+            if not is_stego:
+                messagebox.showinfo("Information", "This is not a stego GIF.")
+                self.update_gif_progress(0)
+                self.set_button_state(self.gif_metadata_button, "normal", operation=True)
+                return
+            else:
+                print("[STEGO DETECTION] This is a stego GIF.")
+                
+            # Get encryption key
+            key_str = self.gif_key_entry.get().strip()
+            if not key_str:
+                messagebox.showerror("Error", "Please Provide an Encryption Key.")
+                self.update_gif_progress(0)
+                self.set_button_state(self.gif_metadata_button, "normal", operation=True)
+                return
+                
+            # Get password if provided
+            gif_password = self.gif_password_entry.get().strip()
+            if not gif_password:
+                messagebox.showerror("Error", "Please Provide a Password.")
+                self.update_gif_progress(0)
+                self.set_button_state(self.gif_metadata_button, "normal", operation=True)
+                return
+            
+            self.update_gif_progress(20)
+            
+            # Initialize cipher with the key
+            if not self.gif_logic.get_cipher(key_str, self.root):
+                self.update_gif_progress(0)
+                self.set_button_state(self.gif_metadata_button, "normal", operation=True)
+                return
+                
+            self.update_gif_progress(30)
+            
+            # Try to view metadata
+            try:
+                # Use gif_logic to extract metadata
+                author, timestamp, file_count = self.gif_logic.view_metadata(
+                    self.carrier_gif_path,
+                    key_str,
+                    gif_password,
+                    lambda value: self.root.after(0, lambda v=value: self.update_gif_progress(v))
+                )
+                
+                self.update_gif_progress(100)
+                
+                # Display the metadata
+                messagebox.showinfo(
+                    "Metadata Information",
+                    f"Metadata Successfully Extracted!\n\n"
+                    f"File Contains {file_count} Embedded Files\n"
+                    f"Author: {author}\n"
+                    f"Timestamp: {timestamp}"
+                )
+                
+                self.history_manager.add_entry(
+                    "View Metadata",
+                    f"Viewed metadata from {self.carrier_gif_path} (GIF-Stego)"
+                )
+                self.update_history_view()
+                
+            except ValueError as extract_error:
+                error_str = str(extract_error).lower()
+                
+                # Check for specific errors
+                if "incorrect encryption key" in error_str or "key mismatch" in error_str:
+                    messagebox.showerror("Error", "The Password or The Encryption Key is Incorrect.")
+                elif "incorrect password" in error_str or "password mismatch" in error_str:
+                    messagebox.showerror("Error", "The Password or The Encryption Key is Incorrect.")
+                else:
+                    messagebox.showerror("Error", f"Error reading GIF Metadata")
+            
+        except Exception as e:
+            logging.error(f"Failed to view GIF Metadata")
+            messagebox.showerror("Error", f"Failed to view GIF Metadata")
+            
+        finally:
+            self.update_gif_progress(0)
+            self.set_button_state(self.gif_metadata_button, "normal", operation=True)
+
     def detect_gif_steganography(self, gif_path):
         """Detect if a GIF contains hidden data using our GIF steganography technique."""
         try:
@@ -2403,6 +1883,7 @@ class SteganographyApp:
             print(f"[StegoDetector] Error during detection: {str(e)}")
             return False, f"Detection error: {str(e)}"
 
+
     def validate_gif(self, gif_path):
         """Validate if a file is a valid GIF."""
         try:
@@ -2414,7 +1895,7 @@ class SteganographyApp:
                 
             # Check file extension
             if not gif_path.lower().endswith('.gif'):
-                self.root.after(0, lambda: messagebox.showerror("Error", "Not a GIF file. Please select a file with .gif extension."))
+                self.root.after(0, lambda: messagebox.showerror("Error", "Not a GIF file. Please Select a File with .gif Extension."))
                 self.root.after(0, self.reset_gif_fields)  # Reset all fields if invalid
                 return False
                 
@@ -2422,7 +1903,7 @@ class SteganographyApp:
             try:
                 Image.open(gif_path).verify()
             except Exception as e:
-                self.root.after(0, lambda: messagebox.showerror("Error", f"Invalid GIF format: {str(e)}"))
+                self.root.after(0, lambda: messagebox.showerror("Error", f"Invalid GIF Format"))
                 self.root.after(0, self.reset_gif_fields)  # Reset all fields if invalid
                 return False
                 
@@ -2430,60 +1911,237 @@ class SteganographyApp:
             with open(gif_path, 'rb') as f:
                 header = f.read(6)
                 if not header.startswith(b'GIF8'):
-                    self.root.after(0, lambda: messagebox.showerror("Error", "Not a valid GIF file (invalid header)."))
+                    self.root.after(0, lambda: messagebox.showerror("Error", "Not a Valid GIF File (Invalid Header)."))
                     self.root.after(0, self.reset_gif_fields)  # Reset all fields if invalid
                     return False
                     
             return True
         except Exception as e:
-            self.root.after(0, lambda: messagebox.showerror("Error", f"Failed to validate GIF: {str(e)}"))
+            self.root.after(0, lambda: messagebox.showerror("Error", f"Failed to Validate GIF"))
             self.root.after(0, self.reset_gif_fields)  # Reset all fields if invalid
             return False
-            
-    def _load_carrier_image_thread(self, new_path):
-        """Thread to load a carrier image."""
-        try:
-            # Verify the image can be opened
-            try:
-                Image.open(new_path).verify()
-            except Exception as e:
-                self.root.after(0, lambda: messagebox.showerror("Error", f"Invalid image file: {str(e)}"))
-                # Reset all fields regardless of whether there was a previous image
-                self.root.after(0, self.reset_fields)
-                return
-                
-            # Update the carrier path and start loading
-            self.carrier_image_path = new_path
-            self._load_carrier_image()
-            
-        except Exception as e:
-            logging.error(f"Failed to load carrier image: {str(e)}")
-            self.root.after(0, lambda: messagebox.showerror("Error", f"Failed to load image: {str(e)}"))
-            # Reset all fields regardless of whether there was a previous image
-            self.root.after(0, self.reset_fields)
-        finally:
-            self.root.after(0, lambda: self.load_image_button.configure(state="normal"))
+    
 
-    def _load_carrier_gif_thread(self, new_path):
-        """Thread to load a carrier GIF."""
+    def validate_inputs(self, password_entry, author_entry, for_embedding=True):
+        """Validate user inputs for password and author."""
         try:
-            # Verify the GIF is valid
-            if not self.validate_gif(new_path):
-                # Reset function is called inside validate_gif if it fails
-                return
-                
-            # Update the carrier path and start loading
-            self.carrier_gif_path = new_path
-            self._load_carrier_gif()
+            password = password_entry.get().strip()
+            author = author_entry.get().strip()
             
+            # For extraction, we just return the values
+            if not for_embedding:
+                return True, password, author
+                
+            # Additional validation for embedding
+            if not author:
+                author = "Anonymous"  # Default author name if none provided
+                
+            return True, password, author
         except Exception as e:
-            logging.error(f"Failed to load carrier GIF: {str(e)}")
-            self.root.after(0, lambda: messagebox.showerror("Error", f"Failed to load GIF: {str(e)}"))
-            # Reset all fields regardless of whether there was a previous GIF
-            self.root.after(0, self.reset_gif_fields)
-        finally:
-            self.root.after(0, lambda: self.load_gif_button.configure(state="normal"))
+            logging.error(f"Input validation error: {str(e)}")
+            messagebox.showerror("Error", f"Input validation failed")
+            return False, None, None
 
+    def update_history_view(self):
+        """Update the history view with the latest entries."""
+        for item in self.history_tree.get_children():
+            self.history_tree.delete(item)
+        for entry in self.history_manager.get_history():
+            self.history_tree.insert("", "end", values=(
+                entry["timestamp"], entry["operation"], entry["details"]
+            ))
+
+    def update_progress(self, value):
+        """Update the progress bar value and label."""
+        self.progress.set(value / 100)  # CustomTkinter progress bars use 0-1 range
+        self.progress_label.configure(text=f"Progress: {value}%")
+        # Force update to ensure progress is displayed immediately
+        self.root.update_idletasks()
+
+    def update_gif_progress(self, value):
+        """Update the GIF progress bar value and label."""
+        self.gif_progress.set(value / 100)
+        self.gif_progress_label.configure(text=f"Progress: {value}%")
+        # Force update to ensure progress is displayed immediately
+        self.root.update_idletasks()
+
+    def reset_fields(self):
+        """Reset all fields to their initial state for image stego."""
+        # Reset operation flag first
+        self.operation_in_progress = False
+        
+        # Reset data paths and states
+        self.carrier_image_path = None
+        self.data_file_path = None
+        self.stego_image = None
+        self.carrier_image_hash = None
+        
+        # Reset progress bar
+        self.progress.set(0)
+        self.progress_label.configure(text="Progress: 0%")
+        self.root.update_idletasks()
+        
+        # Reset status labels to initial state
+        self.carrier_image_status.configure(text="No Image Selected", text_color="red")
+        self.data_file_status.configure(text="No Files Selected", text_color="red")
+        
+        # Reset estimates
+        self.estimates_visible = False
+        if hasattr(self, 'estimates_label'):
+            self.estimates_label.pack_forget()
+        
+        # Clear and disable all input fields with proper initial state
+        self.key_entry.delete(0, "end")
+        self.key_entry.configure(
+            state="disabled",
+            placeholder_text="",
+            fg_color="#2b2b2b",
+            bg_color="#2b2b2b",
+            text_color="gray70" , 
+            show="*"
+        )
+        
+        self.password_entry.delete(0, "end")
+        self.password_entry.configure(
+            state="disabled",
+            placeholder_text="",
+            fg_color="#2b2b2b",
+            bg_color="#2b2b2b",
+            text_color="gray70",
+            show="*"  # Ensure password masking is set
+        )
+        
+        self.author_entry.delete(0, "end")
+        self.author_entry.configure(
+            state="disabled",
+            placeholder_text="",
+            fg_color="#2b2b2b",
+            bg_color="#2b2b2b",
+            text_color="gray70"
+        )
+        
+        self.root.focus_set()
+
+        # Disable all action buttons and reset their appearance
+        self.embed_button.configure(
+            state="disabled",
+            text_color_disabled="#8fbf8f"
+        )
+        self.extract_button.configure(
+            state="disabled",
+            text_color_disabled="#8fbf8f"
+        )
+        self.metadata_button.configure(
+            state="disabled",
+            text_color_disabled="#8fbf8f"
+        )
+        self.generate_key_button.configure(
+            state="disabled",
+            text_color_disabled="#8fbf8f"
+        )
+        
+        # Enable the browse button
+        self.load_image_button.configure(state="normal")
+        
+        # Final UI update
+        self.root.update_idletasks()
+
+    def reset_gif_fields(self):
+        """Reset all fields to their initial state for GIF stego."""
+        # Reset operation flag first
+        self.operation_in_progress = False
+        
+        # Reset data paths and states
+        self.carrier_gif_path = None
+        self.gif_data_file_path = None
+        self.carrier_gif_hash = None
+        
+        # Reset progress bar
+        self.gif_progress.set(0)
+        self.gif_progress_label.configure(text="Progress: 0%")
+        self.root.update_idletasks()
+        
+        # Reset status labels to initial state
+        self.carrier_gif_status.configure(text="No GIF Selected", text_color="red")
+        self.gif_data_file_status.configure(text="No Files Selected", text_color="red")
+        
+        # Reset estimates
+        self.estimates_visible = False
+        if hasattr(self, 'gif_estimates_label'):
+            self.gif_estimates_label.pack_forget()
+        
+        # Clear and disable all input fields with proper initial state
+        self.gif_key_entry.delete(0, "end")
+        self.gif_key_entry.configure(
+            state="disabled",
+            placeholder_text="",
+            fg_color="#2b2b2b",
+            bg_color="#2b2b2b",
+            text_color="gray70" , 
+            show="*"
+        )
+        
+        self.gif_password_entry.delete(0, "end")
+        self.gif_password_entry.configure(
+            state="disabled",
+            placeholder_text="",
+            fg_color="#2b2b2b",
+            bg_color="#2b2b2b",
+            text_color="gray70",
+            show="*"  # Ensure password masking is set
+        )
+        
+        self.gif_author_entry.delete(0, "end")
+        self.gif_author_entry.configure(
+            state="disabled",
+            placeholder_text="",
+            fg_color="#2b2b2b",
+            bg_color="#2b2b2b",
+            text_color="gray70"
+        )
+
+        self.root.focus_set()
+
+        # Disable all action buttons and reset their appearance
+        self.gif_embed_button.configure(
+            state="disabled",
+            text_color_disabled="#8fbf8f"
+        )
+        self.gif_extract_button.configure(
+            state="disabled",
+            text_color_disabled="#8fbf8f"
+        )
+        self.gif_metadata_button.configure(
+            state="disabled",
+            text_color_disabled="#8fbf8f"
+        )
+        self.gif_generate_key_button.configure(
+            state="disabled",
+            text_color_disabled="#8fbf8f"
+        )
+        
+        # Enable the browse button
+        self.load_gif_button.configure(state="normal")
+        
+        # Final UI update
+        self.root.update_idletasks()
+
+    def set_button_state(self, button, state, operation=False):
+        """Set button state and update operation in progress flag."""
+        button.configure(state=state)
+        if operation:
+            self.operation_in_progress = (state == "disabled")
+        self.root.update_idletasks()  # Force UI update
+    
+    def cleanup(self):
+        """Clean up resources before closing the application."""
+        self.carrier_image_path = None
+        self.carrier_gif_path = None
+        self.data_file_path = None
+        self.gif_data_file_path = None
+        self.stego_image = None
+        gc.collect()
+    
 if __name__ == "__main__":
     try:
         root = TkinterDnD.Tk()
