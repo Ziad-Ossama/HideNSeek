@@ -621,7 +621,6 @@ class SteganographyApp:
                             "6. Check the history tab to see past operations.\n\n"
                             "Note: Ensure the key and password match during extraction!")
 
-    
     def generate_key(self):
         """Generate a new encryption key and copy it to the clipboard for image stego."""
         # Use SteganographyLogic to generate the key
@@ -632,7 +631,6 @@ class SteganographyApp:
         messagebox.showinfo("Key Generated", "Key copied to clipboard.")
         self.history_manager.add_entry("Key Generation", "Generated a new encryption key for Image-Stego.")
 
-
     def generate_gif_key(self):
         """Generate a new encryption key and copy it to the clipboard for GIF stego."""
         # This is correctly using gif_logic to generate the key
@@ -642,6 +640,25 @@ class SteganographyApp:
         pyperclip.copy(self.key)
         messagebox.showinfo("Key Generated", "Key copied to clipboard.")
         self.history_manager.add_entry("Key Generation", "Generated a new encryption key for GIF-Stego.")
+
+    def analyze_lsb_entropy(self, image_path):
+        """Analyze LSB entropy of an image to determine its suitability as a carrier."""
+        img = Image.open(image_path).convert("RGB")
+        pixels = np.array(img)
+        flat = pixels.flatten()
+        lsb_bits = flat & 1
+        ratio = np.sum(lsb_bits) / lsb_bits.size
+        deviation = abs(0.5 - ratio) * 2
+        entropy_score = (1 - deviation) * 100
+
+        if entropy_score >= 95:
+            return f"✅ Excellent carrier image (LSB Entropy: {entropy_score:.2f}%)"
+        elif entropy_score >= 85:
+            return f"🟡 Good carrier (LSB Entropy: {entropy_score:.2f}%)"
+        elif entropy_score >= 70:
+            return f"⚠️ Fair carrier – Consider a more random image (LSB Entropy: {entropy_score:.2f}%)"
+        else:
+            return f"❌ Poor carrier – LSBs too predictable (LSB Entropy: {entropy_score:.2f}%)"
 
     def drop_carrier_image(self, event):
         """Handle dropped files for carrier image."""
@@ -684,7 +701,7 @@ class SteganographyApp:
         self.carrier_image_status.configure(text="Loading...", text_color="yellow")
         self.load_image_button.configure(state="disabled")
         threading.Thread(target=self._load_carrier_image, daemon=True).start()
-
+    
     def _load_carrier_image(self):
         """Load the carrier image and compute its hash."""
         with self.image_load_lock:
@@ -692,11 +709,40 @@ class SteganographyApp:
                 with open(self.carrier_image_path, "rb") as f:
                     self.carrier_image_hash = hashlib.sha256(f.read()).hexdigest()
                 
-                # Update status and enable buttons
-                self.root.after(0, lambda: self.carrier_image_status.configure(
-                    text=f"Image selected ({os.path.basename(self.carrier_image_path)})", 
+                # Get the filename from the path
+                filename = os.path.basename(self.carrier_image_path)
+                
+                # First show the filename that was selected
+                self.root.after(0, lambda fname=filename: self.carrier_image_status.configure(
+                    text=f"Image selected: {fname}", 
                     text_color="green"
                 ))
+                
+                # Create a frame to hold multiple status messages if it doesn't exist
+                if not hasattr(self, 'entropy_label'):
+                    self.entropy_label = ctk.CTkLabel(
+                        self.image_section, 
+                        text="", 
+                        text_color="orange", 
+                        font=("Helvetica", 12, "bold")
+                    )
+                
+                # Make sure the label is added to the UI
+                try:
+                    # First, show the label if it was previously hidden
+                    self.entropy_label.pack(pady=(0, button_pady))
+                except:
+                    # If there's an error (like if it's already packed), pack it again
+                    self.entropy_label.pack_forget()
+                    self.entropy_label.pack(pady=(0, button_pady))
+                
+                # Then analyze LSB randomness and display it in the separate label
+                entropy_msg = self.analyze_lsb_entropy(self.carrier_image_path)
+                self.root.after(0, lambda msg=entropy_msg: self.entropy_label.configure(
+                    text=msg, 
+                    text_color="orange"
+                ))
+                print(f"LSB Entropy Analysis: {entropy_msg}")
                 
                 # Enable all action buttons when an image is successfully loaded
                 self.root.after(0, lambda: self.embed_button.configure(state="normal"))
@@ -707,12 +753,12 @@ class SteganographyApp:
                 # Enable the key entry and authentication fields with updated placeholders
                 self.root.after(0, lambda: self.key_entry.configure(
                     state="normal", 
-                    placeholder_text="Enter or generate a key" , 
+                    placeholder_text="Enter or generate a key", 
                     show="*"
                 ))
                 self.root.after(0, lambda: self.password_entry.configure(
                     state="normal", 
-                    placeholder_text="Enter password" , 
+                    placeholder_text="Enter password", 
                     show="*"
                 ))
                 self.root.after(0, lambda: self.author_entry.configure(
@@ -790,7 +836,6 @@ class SteganographyApp:
             text_color="green" if self.data_file_path else "red"
         )
 
-
     def load_data_file(self, file_paths=None):
         """Load data files to embed for image stego."""
         MAX_FILE_SIZE = 100 * 1024 * 1024  # 100 MB per file for images
@@ -837,6 +882,7 @@ class SteganographyApp:
             if self.data_file_path else "No Files Selected",
             text_color="green" if self.data_file_path else "red"
         )
+        
     def start_embed(self):
         """Start the embedding process."""
         if self.operation_in_progress:
@@ -1077,6 +1123,7 @@ class SteganographyApp:
         """Start the image metadata viewing process."""
         if self.operation_in_progress:
             return
+
         threading.Thread(target=self._view_metadata_thread, daemon=True).start()
 
     def _view_metadata_thread(self):
@@ -1263,7 +1310,6 @@ class SteganographyApp:
             print(f"[StegoDetector] Error during detection: {str(e)}")
             return False, f"Detection error: {str(e)}"
 
-
     def _load_carrier_gif_thread(self, new_path):
         """Thread to load a carrier GIF."""
         try:
@@ -1339,7 +1385,6 @@ class SteganographyApp:
                 
             finally:
                 self.root.after(0, lambda: self.load_gif_button.configure(state="normal"))
-
 
     def drop_carrier_gif(self, event):
         """Handle dropped files for carrier GIF."""
@@ -1427,7 +1472,6 @@ class SteganographyApp:
             text_color="green" if self.gif_data_file_path else "red"
         )
 
-
     def load_gif_data_file(self, file_paths=None):
         """Load data files to embed for GIF stego."""
         MAX_FILE_SIZE = 500 * 1024 * 1024  # 500 MB per file for GIFs
@@ -1474,7 +1518,6 @@ class SteganographyApp:
             if self.gif_data_file_path else "No Files Selected",
             text_color="green" if self.gif_data_file_path else "red"
         )
-
 
     def start_gif_embed(self):
         """Start the GIF embedding process."""
@@ -1710,6 +1753,7 @@ class SteganographyApp:
         """Start the GIF metadata viewing process."""
         if self.operation_in_progress:
             return
+
         threading.Thread(target=self._gif_view_metadata_thread, daemon=True).start()
 
     def _gif_view_metadata_thread(self):
@@ -1760,7 +1804,7 @@ class SteganographyApp:
                 
             self.update_gif_progress(30)
             
-            # Try to view metadata
+            # Try to extract metadata
             try:
                 # Use gif_logic to extract metadata
                 author, timestamp, file_count = self.gif_logic.view_metadata(
@@ -1811,6 +1855,7 @@ class SteganographyApp:
         try:
             print(f"[StegoDetector] Checking GIF: {gif_path}")
             
+            # Check if the file exists
             if not os.path.exists(gif_path):
                 print(f"[StegoDetector] GIF file does not exist: {gif_path}")
                 return False, "GIF file does not exist"
@@ -1883,7 +1928,6 @@ class SteganographyApp:
             print(f"[StegoDetector] Error during detection: {str(e)}")
             return False, f"Detection error: {str(e)}"
 
-
     def validate_gif(self, gif_path):
         """Validate if a file is a valid GIF."""
         try:
@@ -1921,7 +1965,6 @@ class SteganographyApp:
             self.root.after(0, self.reset_gif_fields)  # Reset all fields if invalid
             return False
     
-
     def validate_inputs(self, password_entry, author_entry, for_embedding=True):
         """Validate user inputs for password and author."""
         try:
@@ -1984,6 +2027,10 @@ class SteganographyApp:
         # Reset status labels to initial state
         self.carrier_image_status.configure(text="No Image Selected", text_color="red")
         self.data_file_status.configure(text="No Files Selected", text_color="red")
+        
+        # Hide the entropy label if it exists
+        if hasattr(self, 'entropy_label'):
+            self.entropy_label.pack_forget()
         
         # Reset estimates
         self.estimates_visible = False
