@@ -616,7 +616,7 @@ class SteganographyApp:
                             "1. Select a carrier image or GIF using 'Browse Image/GIF' or drag and drop.\n"
                             "2. Choose files to hide using 'Browse Files' or drag and drop (max 20 files).\n"
                             "3. Enter an encryption key or generate one.\n"
-                            "4. (Optional) Add a password and author name.\n"
+                            "4. Add a password and (Optional) author name.\n"
                             "5. Click 'Embed Data' to hide data, 'Extract Data' to retrieve it, or 'View Metadata' to see details.\n"
                             "6. Check the history tab to see past operations.\n\n"
                             "Note: Ensure the key and password match during extraction!")
@@ -668,12 +668,12 @@ class SteganographyApp:
 
         files = self.root.splitlist(event.data)
         if len(files) > 1:
-            messagebox.showerror("Error", "Please Drop Only One Image File.")
+            messagebox.showerror("Carrier Fail", "Please Drop Only One Image File.")
             return
 
         file_path = files[0]
         if not file_path.lower().endswith(('.png', '.jpg', '.jpeg')):
-            messagebox.showerror("Error", "Please Drop a PNG, JPG, or JPEG File.")
+            messagebox.showerror("Carrier Fail", "Please Drop a PNG, JPG, or JPEG File.")
             return
 
         self.carrier_image_path = file_path
@@ -767,7 +767,7 @@ class SteganographyApp:
                 ))
                 
             except Exception as e:
-                self.root.after(0, lambda e=e: messagebox.showerror("Error", f"Failed to Load Image"))
+                self.root.after(0, lambda e=e: messagebox.showerror("Carrier Fail", f"Failed to Load Image"))
                 self.root.after(0, lambda e=e: self.carrier_image_status.configure(text=f"Failed to Load Image", text_color="red"))
                 self.root.after(0, self.reset_fields)
                 
@@ -781,7 +781,7 @@ class SteganographyApp:
             try:
                 Image.open(new_path).verify()
             except Exception as e:
-                self.root.after(0, lambda: messagebox.showerror("Error", f"Invalid Image File"))
+                self.root.after(0, lambda: messagebox.showerror("Carrier Fail", f"Invalid Image File"))
                 # Reset all fields regardless of whether there was a previous image
                 self.root.after(0, self.reset_fields)
                 return
@@ -792,7 +792,7 @@ class SteganographyApp:
             
         except Exception as e:
             logging.error(f"Failed to load carrier image")
-            self.root.after(0, lambda: messagebox.showerror("Error", f"Failed to Load Image"))
+            self.root.after(0, lambda: messagebox.showerror("Carrier Fail", f"Failed to Load Image"))
             # Reset all fields regardless of whether there was a previous image
             self.root.after(0, self.reset_fields)
         finally:
@@ -806,7 +806,7 @@ class SteganographyApp:
 
         files = self.root.splitlist(event.data)
         if len(files) > MAX_FILES:
-            messagebox.showerror("Error", f"You Can Only Select Up to {MAX_FILES} Files at a Time.")
+            messagebox.showerror("Data Fail", f"You Can Only Select Up to {MAX_FILES} Files at a Time.")
             return
 
         # Check file sizes
@@ -818,7 +818,7 @@ class SteganographyApp:
                 oversized_files.append(f"'{os.path.basename(path)}' ({file_size / (1024*1024):.1f} MB)")
             total_size += file_size
             if total_size > MAX_TOTAL_SIZE:
-                messagebox.showerror("Error", 
+                messagebox.showerror("Data Fail", 
                     f"Total Size of Dropped Files ({total_size / (1024*1024):.1f} MB) "
                     f"Exceeds The Maximum Limit of {MAX_TOTAL_SIZE / (1024*1024):.1f} MB")
                 return
@@ -848,7 +848,7 @@ class SteganographyApp:
             self.data_file_path = file_paths
 
         if len(self.data_file_path) > MAX_FILES:
-            messagebox.showerror("Error", f"You Can Only Select Up to {MAX_FILES} Files at a Time.")
+            messagebox.showerror("Data Fail", f"You Can Only Select Up to {MAX_FILES} Files at a Time.")
             self.data_file_path = []
             self.data_file_status.configure(text="No Files Selected", text_color="red")
             return
@@ -862,7 +862,7 @@ class SteganographyApp:
                 oversized_files.append(f"'{os.path.basename(path)}' ({file_size / (1024*1024):.1f} MB)")
             total_size += file_size
             if total_size > MAX_TOTAL_SIZE:
-                messagebox.showerror("Error", 
+                messagebox.showerror("Data Fail", 
                     f"Total size of selected files ({total_size / (1024*1024):.1f} MB) "
                     f"Exceeds The Maximum Limit of {MAX_TOTAL_SIZE / (1024*1024):.1f} MB")
                 self.data_file_path = []
@@ -870,7 +870,7 @@ class SteganographyApp:
                 return
 
         if oversized_files:
-            messagebox.showerror("Error",
+            messagebox.showerror("Data Fail",
                 f"The Following Files Exceed The {MAX_FILE_SIZE / (1024*1024):.1f} MB Per-File Limit:\n\n" +
                 "\n".join(oversized_files))
             self.data_file_path = []
@@ -890,24 +890,24 @@ class SteganographyApp:
             
         # Check for carrier image first
         if not self.carrier_image_path:
-            messagebox.showerror("Error", "Please Select a Carrier Image.")
+            messagebox.showerror("Carrier Fail", "Please Select a Carrier Image.")
             return
             
         # Check for data files
         if not self.data_file_path:
-            messagebox.showerror("Error", "Please Select One or More Data Files to Embed.")
+            messagebox.showerror("Data Fail", "Please Select One or More Data Files to Embed.")
             return
 
         # Check for encryption key
         key_str = self.key_entry.get().strip()
         if not key_str:
-            messagebox.showerror("Error", "Please Generate or Enter an Encryption Key.")
+            messagebox.showerror("Embeding Error", "Please Generate or Enter an Encryption Key.")
             return
         
         # Check for password
         password = self.password_entry.get().strip()
         if not password:
-            messagebox.showerror("Error", "Please Enter a Password.")
+            messagebox.showerror("Embeding Error", "Please Enter a Password.")
             return
         
         # Validate password and author inputs
@@ -924,7 +924,7 @@ class SteganographyApp:
         try:
             # Validate carrier and data file paths
             if not self.carrier_image_path or not self.data_file_path:
-                messagebox.showerror("Error", "Missing carrier image or data files.")
+                messagebox.showerror("Embeding Error", "Missing carrier image or data files.")
                 self.root.after(0, lambda: self.update_progress(0))
                 self.set_button_state(self.embed_button, "normal", operation=True)
                 return
@@ -933,7 +933,7 @@ class SteganographyApp:
             with open(self.carrier_image_path, "rb") as f:
                 current_hash = hashlib.sha256(f.read()).hexdigest()
             if self.carrier_image_hash != current_hash:
-                messagebox.showerror("Error", "Carrier Image has been Modified since Loading!")
+                messagebox.showerror("Embeding Error", "Carrier Image has been Modified since Loading!")
                 self.root.after(0, lambda: self.update_progress(0))
                 self.set_button_state(self.embed_button, "normal", operation=True)
                 return
@@ -941,7 +941,7 @@ class SteganographyApp:
             # Get encryption key
             key_str = self.key_entry.get().strip()
             if not key_str:
-                messagebox.showerror("Error", "Please Provide a valid encryption key.")
+                messagebox.showerror("Embeding Error", "Please Provide a valid encryption key.")
                 self.root.after(0, lambda: self.update_progress(0))
                 self.set_button_state(self.embed_button, "normal", operation=True)
                 return
@@ -978,7 +978,7 @@ class SteganographyApp:
                     # Save the embedded image
                     self.stego_image.save(save_path)
                     self.update_progress(100)
-                    messagebox.showinfo("Success", "Data embedded successfully!")
+                    messagebox.showinfo("Embedding Success", "Data embedded successfully!")
                     self.history_manager.add_entry(
                         "Embed",
                         f"Embedded {len(self.data_file_path)} files into {save_path} (Image-Stego)"
@@ -987,7 +987,7 @@ class SteganographyApp:
                     self.root.after(100, self.reset_fields)
                 else:
                     # User canceled saving
-                    messagebox.showinfo("Cancelled", "Embedding operation cancelled by user.")
+                    messagebox.showinfo("Embedding Cancelled", "Embedding operation cancelled by user.")
                     # Clear embedded data from memory but keep settings
                     self.stego_image = None
                     # Reset progress bar only
@@ -1001,7 +1001,7 @@ class SteganographyApp:
 
         except Exception as e:
             logging.error(f"Embedding failed: {str(e)}")
-            self.root.after(0, lambda: messagebox.showerror("Error", f"Image Embedding Failed"))
+            self.root.after(0, lambda: messagebox.showerror("Embeding Failed",str(e)))
             self.root.after(0, lambda: self.update_progress(0))
             self.root.after(0, self.reset_fields)
         finally:
@@ -1014,19 +1014,19 @@ class SteganographyApp:
 
         # Check for carrier image first
         if not self.carrier_image_path:
-            messagebox.showerror("Error", "Please Select a Carrier Image.")
+            messagebox.showerror("Carrier Fail", "Please Select a Carrier Image.")
             return
 
         # Check for encryption key
         key_str = self.key_entry.get().strip()
         if not key_str:
-            messagebox.showerror("Error", "Please Generate or Enter an Encryption Key.")
+            messagebox.showerror("Extraction Error", "Please Generate or Enter an Encryption Key.")
             return
 
         # Check for password
         password = self.password_entry.get().strip()
         if not password:
-            messagebox.showerror("Error", "Please Enter the Password Used During Embedding.")
+            messagebox.showerror("Extraction Error", "Please Enter the Password Used During Embedding.")
             return
 
         # If all checks pass, proceed with validation and extraction
@@ -1040,7 +1040,7 @@ class SteganographyApp:
         try:
             self.set_button_state(self.extract_button, "disabled", operation=True)
             if not self.carrier_image_path:
-                messagebox.showerror("Error", "Select a carrier image.")
+                messagebox.showerror("Carrier Fail", "Select a carrier image.")
                 self.root.after(0, lambda: self.update_progress(0))  # Reset progress on error
                 self.set_button_state(self.extract_button, "normal", operation=True)
                 return
@@ -1048,14 +1048,14 @@ class SteganographyApp:
             with open(self.carrier_image_path, "rb") as f:
                 current_hash = hashlib.sha256(f.read()).hexdigest()
             if self.carrier_image_hash != current_hash:
-                messagebox.showerror("Error", "Carrier image has been modified since loading!")
+                messagebox.showerror("Carrier Fail", "Carrier image has been modified since loading!")
                 self.root.after(0, lambda: self.update_progress(0))  # Reset progress on error
                 self.set_button_state(self.extract_button, "normal", operation=True)
                 return
 
             key_str = self.key_entry.get().strip()
             if not key_str:
-                messagebox.showerror("Error", "Please provide a valid encryption key.")
+                messagebox.showerror("Extraction Error", "Please provide a valid encryption key.")
                 self.root.after(0, lambda: self.update_progress(0))  # Reset progress on error
                 self.set_button_state(self.extract_button, "normal", operation=True)
                 return
@@ -1079,7 +1079,7 @@ class SteganographyApp:
 
             output_folder = filedialog.askdirectory(title="Select Output Folder")
             if not output_folder:
-                self.root.after(0, lambda: messagebox.showinfo("Cancelled", "Extraction cancelled by user."))
+                self.root.after(0, lambda: messagebox.showinfo("Extraction Canceled", "Extraction cancelled by user."))
                 self.root.after(0, lambda: self.update_progress(0))
                 self.root.after(0, self.reset_fields)  # Reset immediately when cancelled
                 self.set_button_state(self.extract_button, "normal", operation=True)
@@ -1100,7 +1100,7 @@ class SteganographyApp:
 
             self.root.after(0, lambda: self.update_progress(100))
             self.root.after(0, lambda: messagebox.showinfo(
-                "Success",
+                "Extraction Success",
                 f"Extracted {len(files_data)} files to {output_subfolder}\n\n"
                 f"Metadata:\nAuthor: {author}\nTimestamp: {timestamp_readable}"
             ))
@@ -1113,7 +1113,7 @@ class SteganographyApp:
 
         except Exception as e:
             logging.error(f"Extraction failed: {str(e)}")
-            self.root.after(0, lambda: messagebox.showerror("Error", f"Extraction failed: {str(e)}"))
+            self.root.after(0, lambda: messagebox.showerror("Extraction Error", str(e)))
             self.root.after(0, lambda: self.update_progress(0))
             self.root.after(0, self.reset_fields)  # Reset immediately on error
         finally:
@@ -1131,7 +1131,7 @@ class SteganographyApp:
         self.set_button_state(self.metadata_button, "disabled", operation=True)
         
         if not self.carrier_image_path:
-            messagebox.showerror("Error", "Please Select a Carrier Image.")
+            messagebox.showerror("Carrier Fail", "Please Select a Carrier Image.")
             self.set_button_state(self.metadata_button, "normal", operation=True)
             return
         
@@ -1151,15 +1151,15 @@ class SteganographyApp:
             # Get encryption key
             key_str = self.key_entry.get().strip()
             if not key_str:
-                messagebox.showerror("Error", "Please Provide an Encryption Key.")
+                messagebox.showerror("Extraction Error", "Please Provide an Encryption Key.")
                 self.update_progress(0)
                 self.set_button_state(self.metadata_button, "normal", operation=True)
                 return
                 
-            # Get password if provided
+            # Get password 
             password = self.password_entry.get().strip()
             if not password:
-                messagebox.showerror("Error", "Please Enter The Password Used During Embedding.")
+                messagebox.showerror("Extraction Error", "Please Enter The Password Used During Embedding.")
                 self.update_progress(0)
                 self.set_button_state(self.metadata_button, "normal", operation=True)
                 return
@@ -1207,15 +1207,15 @@ class SteganographyApp:
                 
                 # Check for specific errors
                 if "key mismatch" in error_str or "incorrect key" in error_str:
-                    messagebox.showerror("Error", "The Encryption Key or The Password is Incorrect.")
+                    messagebox.showerror("Extraction Error", "The Encryption Key or The Password is Incorrect.")
                 elif "password mismatch" in error_str or "incorrect password" in error_str:
-                    messagebox.showerror("Error", "The Encryption Key or The Password is Incorrect.")
+                    messagebox.showerror("Extraction Error", "The Encryption Key or The Password is Incorrect.")
                 else:
-                    messagebox.showerror("Error", f"Error Reading Image Metadata")
+                    messagebox.showerror("Extraction Error", f"Error Reading Image Metadata")
             
         except Exception as e:
             logging.error(f"Failed to view Image Metadata")
-            messagebox.showerror("Error", f"Failed to view Image Metadata")
+            messagebox.showerror("Extraction Error", f"Failed to view Image Metadata")
             
         finally:
             self.update_progress(0)
@@ -1324,7 +1324,7 @@ class SteganographyApp:
             
         except Exception as e:
             logging.error(f"Failed to load carrier GIF")
-            self.root.after(0, lambda: messagebox.showerror("Error", f"Failed to Load GIF"))
+            self.root.after(0, lambda: messagebox.showerror("Carrier Fail", f"Failed to Load GIF"))
             # Reset all fields regardless of whether there was a previous GIF
             self.root.after(0, self.reset_gif_fields)
         finally:
@@ -1374,7 +1374,7 @@ class SteganographyApp:
                 ))
                 
             except Exception as e:
-                self.root.after(0, lambda: messagebox.showerror("Error", f"Failed to Load GIF"))
+                self.root.after(0, lambda: messagebox.showerror("Carrier Fail", f"Failed to Load GIF"))
                 self.root.after(0, lambda: self.carrier_gif_status.configure(
                     text=f"Failed to Load GIF", 
                     text_color="red"
@@ -1394,14 +1394,23 @@ class SteganographyApp:
 
         files = self.root.splitlist(event.data)
         if len(files) > 1:
-            messagebox.showerror("Error", "Please Drop Only One GIF File.")
+            messagebox.showerror("Carrier Fail", "Please Drop Only One GIF File.")
             return
 
         file_path = files[0]
         if not file_path.lower().endswith('.gif'):
-            messagebox.showerror("Error", "Please Drop a GIF File.")
+            messagebox.showerror("Carrier Fail", "Please Drop a GIF File.")
+            return
+        
+        # Validate the GIF before setting the carrier path
+        if not self.validate_gif(file_path):
+            # Do not show another error message here; validate_gif already shows "Not a Valid GIF File (Invalid Header)"
+            self.carrier_gif_path = None
+            self.carrier_gif_status.configure(text="No GIF selected", text_color="red")
+            self.root.after(0, self.reset_gif_fields)  # Reset fields to initial state
             return
 
+        # If validation passes, set the carrier path and proceed with loading
         self.carrier_gif_path = file_path
         self.carrier_gif_status.configure(text="Loading...", text_color="yellow")
         self.load_gif_button.configure(state="disabled")
@@ -1424,10 +1433,9 @@ class SteganographyApp:
             self.carrier_gif_path = file_path
 
         if not self.validate_gif(self.carrier_gif_path):
-            messagebox.showerror("Error", "Invalid GIF format!")
+            # Do not show another error message here; validate_gif already shows "Not a Valid GIF File (Invalid Header)"
             self.carrier_gif_path = None
             self.carrier_gif_status.configure(text="No GIF selected", text_color="red")
-
             return
 
         self.carrier_gif_status.configure(text="Loading...", text_color="yellow")
@@ -1442,7 +1450,7 @@ class SteganographyApp:
 
         files = self.root.splitlist(event.data)
         if len(files) > MAX_FILES:
-            messagebox.showerror("Error", f"You Can Only Select Up to {MAX_FILES} Files at a Time.")
+            messagebox.showerror("Data Fail", f"You Can Only Select Up to {MAX_FILES} Files at a Time.")
             return
 
         # Check file sizes
@@ -1454,13 +1462,13 @@ class SteganographyApp:
                 oversized_files.append(f"'{os.path.basename(path)}' ({file_size / (1024*1024):.1f} MB)")
             total_size += file_size
             if total_size > MAX_TOTAL_SIZE:
-                messagebox.showerror("Error", 
+                messagebox.showerror("Data Fail", 
                     f"Total size of Dropped Files ({total_size / (1024*1024):.1f} MB) "
                     f"Exceeds the Maximum Limit of {MAX_TOTAL_SIZE / (1024*1024):.1f} MB")
                 return
 
         if oversized_files:
-            messagebox.showerror("Error",
+            messagebox.showerror("Data Fail",
                 f"The Following Files Exceed the {MAX_FILE_SIZE / (1024*1024):.1f} MB Per-File Limit:\n\n" +
                 "\n".join(oversized_files))
             return
@@ -1484,7 +1492,7 @@ class SteganographyApp:
             self.gif_data_file_path = file_paths
 
         if len(self.gif_data_file_path) > MAX_FILES:
-            messagebox.showerror("Error", f"You Can Only Select Up to {MAX_FILES} Files at a Time.")
+            messagebox.showerror("Data Fail", f"You Can Only Select Up to {MAX_FILES} Files at a Time.")
             self.gif_data_file_path = []
             self.gif_data_file_status.configure(text="No Files Selected", text_color="red")
             return
@@ -1498,7 +1506,7 @@ class SteganographyApp:
                 oversized_files.append(f"'{os.path.basename(path)}' ({file_size / (1024*1024):.1f} MB)")
             total_size += file_size
             if total_size > MAX_TOTAL_SIZE:
-                messagebox.showerror("Error", 
+                messagebox.showerror("Data Fail", 
                     f"Total size of Selected Files ({total_size / (1024*1024):.1f} MB) "
                     f"Exceeds the Maximum Limit of {MAX_TOTAL_SIZE / (1024*1024):.1f} MB")
                 self.gif_data_file_path = []
@@ -1506,7 +1514,7 @@ class SteganographyApp:
                 return
 
         if oversized_files:
-            messagebox.showerror("Error",
+            messagebox.showerror("Data Fail",
                 f"The Following Files Exceed the {MAX_FILE_SIZE / (1024*1024):.1f} MB Per-File Limit:\n\n" +
                 "\n".join(oversized_files))
             self.gif_data_file_path = []
@@ -1526,24 +1534,24 @@ class SteganographyApp:
 
         # Check for carrier GIF first
         if not self.carrier_gif_path:
-            messagebox.showerror("Error", "Please Select a Carrier GIF.")
+            messagebox.showerror("Carrier Fail", "Please Select a Carrier GIF.")
             return
 
         # Check for data files
         if not self.gif_data_file_path:
-            messagebox.showerror("Error", "Please Select Files to Hide.")
+            messagebox.showerror("Data Fail", "Please Select Files to Hide.")
             return
 
         # Check for encryption key
         key_str = self.gif_key_entry.get().strip()
         if not key_str:
-            messagebox.showerror("Error", "Please Generate or Enter an Encryption Key.")
+            messagebox.showerror("Embeding Error", "Please Generate or Enter an Encryption Key.")
             return
 
         # Check for password
         gif_password = self.gif_password_entry.get().strip()
         if not gif_password:
-            messagebox.showerror("Error", "Please Enter a Password.")
+            messagebox.showerror("Embeding Error", "Please Enter a Password.")
             return
 
         # If all checks pass, proceed with validation and embedding
@@ -1558,7 +1566,7 @@ class SteganographyApp:
         try:
             # Validate carrier and data file paths
             if not self.carrier_gif_path or not self.gif_data_file_path:
-                messagebox.showerror("Error", "Missing carrier GIF or data files.")
+                messagebox.showerror("Carrier Fail", "Missing carrier GIF or data files.")
                 self.root.after(0, lambda: self.update_gif_progress(0))
                 self.set_button_state(self.gif_embed_button, "normal", operation=True)
                 return
@@ -1567,7 +1575,7 @@ class SteganographyApp:
             with open(self.carrier_gif_path, "rb") as f:
                 current_hash = hashlib.sha256(f.read()).hexdigest()
             if self.carrier_gif_hash != current_hash:
-                messagebox.showerror("Error", "Carrier GIF has been Modified Since Loading!")
+                messagebox.showerror("Carrier Fail", "Carrier GIF has been Modified Since Loading!")
                 self.root.after(0, lambda: self.update_gif_progress(0))
                 self.set_button_state(self.gif_embed_button, "normal", operation=True)
                 return
@@ -1575,7 +1583,7 @@ class SteganographyApp:
             # Get encryption key
             key_str = self.gif_key_entry.get().strip()
             if not key_str:
-                messagebox.showerror("Error", "Please Provide a Valid Encryption Key.")
+                messagebox.showerror("Embeding Error", "Please Provide a Valid Encryption Key.")
                 self.root.after(0, lambda: self.update_gif_progress(0))
                 self.set_button_state(self.gif_embed_button, "normal", operation=True)
                 return
@@ -1613,7 +1621,7 @@ class SteganographyApp:
                     with open(save_path, "wb") as output_file:
                         output_file.write(embedded_data)
                     self.update_gif_progress(100)
-                    messagebox.showinfo("Success", f"{len(self.gif_data_file_path)} files embedded successfully!")
+                    messagebox.showinfo("Embeding Success", f"{len(self.gif_data_file_path)} files embedded successfully!")
                     self.history_manager.add_entry(
                         "Embed",
                         f"Embedded {len(self.gif_data_file_path)} files into {save_path} (GIF-Stego)"
@@ -1622,7 +1630,7 @@ class SteganographyApp:
                     self.root.after(100, self.reset_gif_fields)
                 else:
                     # User canceled saving
-                    messagebox.showinfo("Cancelled", "Embedding operation cancelled by user.")
+                    messagebox.showinfo("Embeding Canceled", "Embedding operation cancelled by user.")
                     # Reset progress bar only
                     self.root.after(0, lambda: self.update_gif_progress(0))
                     # Force garbage collection to free memory
@@ -1634,7 +1642,7 @@ class SteganographyApp:
 
         except Exception as e:
             logging.error(f"Embedding failed: {str(e)}")
-            messagebox.showerror("Error", f"GIF Embedding Failed")
+            messagebox.showerror("Embeding Error", {str(e)})
             self.update_gif_progress(0)
             self.root.after(0, self.reset_gif_fields)
         finally:
@@ -1647,19 +1655,19 @@ class SteganographyApp:
 
         # Check for carrier GIF first
         if not self.carrier_gif_path:
-            messagebox.showerror("Error", "Please Select a Carrier GIF.")
+            messagebox.showerror("Carrier Fail", "Please Select a Carrier GIF.")
             return
 
         # Check for encryption key
         key_str = self.gif_key_entry.get().strip()
         if not key_str:
-            messagebox.showerror("Error", "Please Generate or Enter an Encryption Key.")
+            messagebox.showerror("Extraction Error", "Please Generate or Enter an Encryption Key.")
             return
 
         # Check for password
         password = self.gif_password_entry.get().strip()
         if not password:
-            messagebox.showerror("Error", "Please Enter the Password Used During Embedding.")
+            messagebox.showerror("Extraction Error", "Please Enter the Password Used During Embedding.")
             return
 
         # If all checks pass, proceed with validation and extraction
@@ -1671,7 +1679,7 @@ class SteganographyApp:
     def _gif_extract_data_thread(self, password):
         self.set_button_state(self.gif_extract_button, "disabled", operation=True)
         if not self.carrier_gif_path:
-            messagebox.showerror("Error", "Select a carrier GIF.")
+            messagebox.showerror("Carrier Fail", "Select a carrier GIF.")
             self.root.after(0, lambda: self.update_gif_progress(0))  # Reset progress on error
             self.set_button_state(self.gif_extract_button, "normal", operation=True)
             return
@@ -1679,14 +1687,14 @@ class SteganographyApp:
         with open(self.carrier_gif_path, "rb") as f:
             current_hash = hashlib.sha256(f.read()).hexdigest()
         if self.carrier_gif_hash != current_hash:
-            messagebox.showerror("Error", "Carrier GIF has been modified since loading!")
+            messagebox.showerror("Carrier Fail", "Carrier GIF has been modified since loading!")
             self.root.after(0, lambda: self.update_gif_progress(0))  # Reset progress on error
             self.set_button_state(self.gif_extract_button, "normal", operation=True)
             return
 
         key_str = self.gif_key_entry.get().strip()
         if not key_str:
-            messagebox.showerror("Error", "Please Provide a Valid Encryption Key.")
+            messagebox.showerror("Extraction Error", "Please Provide a Valid Encryption Key.")
             self.root.after(0, lambda: self.update_gif_progress(0))  # Reset progress on error
             self.set_button_state(self.gif_extract_button, "normal", operation=True)
             return
@@ -1708,7 +1716,7 @@ class SteganographyApp:
 
             output_folder = filedialog.askdirectory(title="Select Output Folder")
             if not output_folder:
-                self.root.after(0, lambda: messagebox.showinfo("Cancelled", "Extraction cancelled by user."))
+                self.root.after(0, lambda: messagebox.showinfo("Extraction Canceled", "Extraction cancelled by user."))
                 self.root.after(0, lambda: self.update_gif_progress(0))
                 self.root.after(0, self.reset_gif_fields)  # Reset immediately when cancelled
                 self.set_button_state(self.gif_extract_button, "normal", operation=True)
@@ -1730,7 +1738,7 @@ class SteganographyApp:
 
             self.root.after(0, lambda: self.update_gif_progress(100))
             self.root.after(0, lambda: messagebox.showinfo(
-                "Success",
+                "Extraction Success",
                 f"Extracted {len(files_data)} files to {output_subfolder}\n\n"
                 f"Metadata:\nAuthor: {author}\nTimestamp: {timestamp}"
             ))
@@ -1743,7 +1751,7 @@ class SteganographyApp:
 
         except Exception as e:
             logging.error(f"Extraction failed: {str(e)}")
-            self.root.after(0, lambda: messagebox.showerror("Error", f"GIF Extraction Failed"))
+            self.root.after(0, lambda: messagebox.showerror("Extraction Error", {str(e)} ))
             self.root.after(0, lambda: self.update_gif_progress(0))
             self.root.after(0, self.reset_gif_fields)  # Reset immediately on error
         finally:
@@ -1761,7 +1769,7 @@ class SteganographyApp:
         self.set_button_state(self.gif_metadata_button, "disabled", operation=True)
         
         if not self.carrier_gif_path:
-            messagebox.showerror("Error", "Please Select a Carrier GIF.")
+            messagebox.showerror("Carrier Fail", "Please Select a Carrier GIF.")
             self.set_button_state(self.gif_metadata_button, "normal", operation=True)
             return
         
@@ -1781,7 +1789,7 @@ class SteganographyApp:
             # Get encryption key
             key_str = self.gif_key_entry.get().strip()
             if not key_str:
-                messagebox.showerror("Error", "Please Provide an Encryption Key.")
+                messagebox.showerror("Extraction Error", "Please Provide an Encryption Key.")
                 self.update_gif_progress(0)
                 self.set_button_state(self.gif_metadata_button, "normal", operation=True)
                 return
@@ -1789,7 +1797,7 @@ class SteganographyApp:
             # Get password if provided
             gif_password = self.gif_password_entry.get().strip()
             if not gif_password:
-                messagebox.showerror("Error", "Please Provide a Password.")
+                messagebox.showerror("Extraction Error", "Please Provide a Password.")
                 self.update_gif_progress(0)
                 self.set_button_state(self.gif_metadata_button, "normal", operation=True)
                 return
@@ -1836,15 +1844,15 @@ class SteganographyApp:
                 
                 # Check for specific errors
                 if "incorrect encryption key" in error_str or "key mismatch" in error_str:
-                    messagebox.showerror("Error", "The Password or The Encryption Key is Incorrect.")
+                    messagebox.showerror("Extraction Error", "The Password or The Encryption Key is Incorrect.")
                 elif "incorrect password" in error_str or "password mismatch" in error_str:
-                    messagebox.showerror("Error", "The Password or The Encryption Key is Incorrect.")
+                    messagebox.showerror("Extraction Error", "The Password or The Encryption Key is Incorrect.")
                 else:
-                    messagebox.showerror("Error", f"Error reading GIF Metadata")
+                    messagebox.showerror("Extraction Error", f"Error reading GIF Metadata")
             
         except Exception as e:
-            logging.error(f"Failed to view GIF Metadata")
-            messagebox.showerror("Error", f"Failed to view GIF Metadata")
+            logging.error(f"Extraction Error : {str(e)}")
+            messagebox.showerror("Extraction Error",{str(e)} )
             
         finally:
             self.update_gif_progress(0)
@@ -1933,13 +1941,13 @@ class SteganographyApp:
         try:
             # Check if the file exists
             if not os.path.exists(gif_path):
-                self.root.after(0, lambda: messagebox.showerror("Error", "GIF file does not exist."))
+                self.root.after(0, lambda: messagebox.showerror("Carrier fail", "GIF file does not exist."))
                 self.root.after(0, self.reset_gif_fields)  # Reset all fields if invalid
                 return False
                 
             # Check file extension
             if not gif_path.lower().endswith('.gif'):
-                self.root.after(0, lambda: messagebox.showerror("Error", "Not a GIF file. Please Select a File with .gif Extension."))
+                self.root.after(0, lambda: messagebox.showerror("Carrier Fail", "Not a GIF file. Please Select a File with .gif Extension."))
                 self.root.after(0, self.reset_gif_fields)  # Reset all fields if invalid
                 return False
                 
@@ -1947,7 +1955,7 @@ class SteganographyApp:
             try:
                 Image.open(gif_path).verify()
             except Exception as e:
-                self.root.after(0, lambda: messagebox.showerror("Error", f"Invalid GIF Format"))
+                self.root.after(0, lambda: messagebox.showerror("Carrier Fail", f"Invalid GIF Format"))
                 self.root.after(0, self.reset_gif_fields)  # Reset all fields if invalid
                 return False
                 
@@ -1955,13 +1963,13 @@ class SteganographyApp:
             with open(gif_path, 'rb') as f:
                 header = f.read(6)
                 if not header.startswith(b'GIF8'):
-                    self.root.after(0, lambda: messagebox.showerror("Error", "Not a Valid GIF File (Invalid Header)."))
+                    self.root.after(0, lambda: messagebox.showerror("Carrier Fail", "Not a Valid GIF File (Invalid Header)."))
                     self.root.after(0, self.reset_gif_fields)  # Reset all fields if invalid
                     return False
                     
             return True
         except Exception as e:
-            self.root.after(0, lambda: messagebox.showerror("Error", f"Failed to Validate GIF"))
+            self.root.after(0, lambda: messagebox.showerror("Carrier Fail", "Failed to Validate GIF"))
             self.root.after(0, self.reset_gif_fields)  # Reset all fields if invalid
             return False
     
@@ -1982,7 +1990,7 @@ class SteganographyApp:
             return True, password, author
         except Exception as e:
             logging.error(f"Input validation error: {str(e)}")
-            messagebox.showerror("Error", f"Input validation failed")
+            messagebox.showerror("Validation Error ", {str(e)} )
             return False, None, None
 
     def update_history_view(self):

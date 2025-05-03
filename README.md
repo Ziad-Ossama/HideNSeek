@@ -1,4 +1,4 @@
-<div align="center"> <img src="assets/HideNSeek Digital Typography Design-Photoroom.png" alt="HideNSeek Logo" width="600"/> <br> <em>Hide your secrets in plain sight</em> <br><br> </div>
+<div align="center"> <img src="assets/Add a heading.png" alt="HideNSeek Logo" width="600"/> <br> <em>Hide your secrets in plain sight</em> <br><br> </div>
 <div align = "center">
 <img alt="License" src="https://img.shields.io/badge/license-MIT-blue">
 <img alt="Python" src="https://img.shields.io/badge/python-3.8+-yellow">

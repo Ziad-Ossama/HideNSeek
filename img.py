@@ -160,10 +160,10 @@ class SteganographyLogic:
             modified_image = flat_image.reshape(image_array.shape)
             update_progress_callback(90)
             return Image.fromarray(modified_image)
-
-        except Exception as e:
+        except ValueError as e:
             logging.error(f"Embedding failed: {str(e)}")
-            raise ValueError(f"Embedding failed: {str(e)}")
+            raise
+        
 
     def extract_data(self, image_path, key_str, password, update_progress_callback, carrier_filename=None):
         """Extract multiple files and metadata from an image with custom filename format."""
@@ -212,7 +212,7 @@ class SteganographyLogic:
             hmac_value = hidden_data[-32:]
             data_to_verify = hidden_data[:-32]
             if not self.verify_hmac(data_to_verify, hmac_value):
-                raise ValueError("File integrity check failed")
+                raise ValueError("Password Mismatch or Key Mismatch")
 
             update_progress_callback(40)
 
@@ -278,10 +278,13 @@ class SteganographyLogic:
                     raise ValueError(f"Decryption failed for file {filename_str}")
                 except zlib.error as e:
                     raise ValueError(f"Decompression failed for file {filename_str}")
-
+                
             update_progress_callback(90)
             return files_data, author, timestamp_readable
-
+        
+        except ValueError as e:
+            logging.error(f"Extraction f: {str(e)}")
+            raise
         except Exception as e:
             logging.error(f"Extraction failed")
             raise ValueError(f"Extraction failed")

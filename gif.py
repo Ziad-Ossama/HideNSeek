@@ -267,7 +267,6 @@ class GIFSteganographyLogic:
                     decrypted_data = self.cipher.decrypt(encrypted_data)
                     decompressed_data = self.decompress_data(decrypted_data)
                     
-                    # Modified: Format filename with the date - match image extraction format
                     new_filename = f"{filename}_{current_date}"
                     
                     files_data.append((new_filename, ext, decompressed_data))
