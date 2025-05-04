@@ -151,7 +151,7 @@ class SteganographyLogic:
             if len(data_bits) > len(flat_image):
                 raise ValueError(f"Data too large for carrier image. Required: {len(data_bits)} bits, Available: {len(flat_image)} bits")
 
-            # Fixed: Use a uint8-compatible mask to clear the LSB
+
             for i in range(len(data_bits)):
                 pixel_value = flat_image[i] & 0xFE  # 0xFE is 11111110 in binary, clears the LSB
                 bit_value = int(data_bits[i])
@@ -283,7 +283,7 @@ class SteganographyLogic:
             return files_data, author, timestamp_readable
         
         except ValueError as e:
-            logging.error(f"Extraction f: {str(e)}")
+            logging.error(f"Extraction : {str(e)}")
             raise
         except Exception as e:
             logging.error(f"Extraction failed")

@@ -19,10 +19,6 @@ import base64
 logging.basicConfig(filename='steganography.log', level=logging.INFO,
                     format='%(asctime)s - %(levelname)s - %(message)s')
 
-# Unique markers to identify data sections
-MAGIC_MARKER = b'\xDE\xAD\xBE\xEF'  # Marks the start of hidden data
-METADATA_MARKER = b'\xCA\xFE\xBA\xBE'  # Marks the metadata section
-
 class GIFSteganographyLogic:
     """Handles the core steganography operations for GIFs (embedding, extracting, etc.)."""
     def __init__(self):
@@ -30,6 +26,8 @@ class GIFSteganographyLogic:
         self.cipher = None
         self.hmac_key = None
         self.MAX_FILES_EMBED = 40  # Maximum files that can be embedded
+        self.MAGIC_MARKER = b'\xDE\xAD\xBE\xEF'
+        self.METADATA_MARKER = b'\xCA\xFE\xBA\xBE'
 
     def generate_key(self):
         """Generate a random encryption key as a string."""
@@ -123,7 +121,7 @@ class GIFSteganographyLogic:
             raise ValueError(f"Hidden data length ({hidden_data_length} bytes) exceeds available data ({available_length} bytes). File may be corrupted or not properly embedded.")
 
         hidden_data = remaining_data[4:4 + hidden_data_length]
-        if not hidden_data.startswith(MAGIC_MARKER):
+        if not hidden_data.startswith(self.MAGIC_MARKER):
             raise ValueError("Hidden data does not start with magic marker. File may not contain embedded data or is corrupted.")
 
         return gif_part, hidden_data
@@ -170,11 +168,11 @@ class GIFSteganographyLogic:
 
         author_bytes = author.strip().encode('utf-8', errors='replace')[:50].ljust(50, b' ')
         timestamp = str(int(time.time())).encode('utf-8')[:20].ljust(20, b' ')
-        metadata = METADATA_MARKER + author_bytes + timestamp
+        metadata = self.METADATA_MARKER + author_bytes + timestamp
         encrypted_metadata = self.cipher.encrypt(metadata)
 
         file_metadata_bytes = b"".join(fn + ext + struct.pack(">I", dl) for fn, ext, dl in file_metadata)
-        hidden_data = (MAGIC_MARKER + key_hash + password_hash +
+        hidden_data = (self.MAGIC_MARKER + key_hash + password_hash +
                        struct.pack(">I", file_count) + file_metadata_bytes +
                        bytes(all_encrypted_data) + struct.pack(">I", len(encrypted_metadata)) + encrypted_metadata)
         hmac_value = self.generate_hmac(hidden_data)
@@ -219,10 +217,10 @@ class GIFSteganographyLogic:
             logging.error("HMAC verification failed")
             raise ValueError("File integrity check failed!")
 
-        marker_index = hidden_data.find(MAGIC_MARKER)
+        marker_index = hidden_data.find(self.MAGIC_MARKER)
         if marker_index == -1:
             raise ValueError("No hidden data found in this GIF.")
-        start_index = marker_index + len(MAGIC_MARKER)
+        start_index = marker_index + len(self.MAGIC_MARKER)
 
         if hidden_data[start_index:start_index + 16] != key_hash:
             raise ValueError("Incorrect encryption key!")
@@ -292,7 +290,7 @@ class GIFSteganographyLogic:
             logging.error(f"Failed to decrypt metadata: {str(e)}")
             raise ValueError(f"Failed to decrypt metadata: {str(e)}")
 
-        if not metadata.startswith(METADATA_MARKER):
+        if not metadata.startswith(self.METADATA_MARKER):
             raise ValueError("No metadata found in this GIF.")
         
         try:
@@ -331,10 +329,10 @@ class GIFSteganographyLogic:
         if not self.verify_hmac(hidden_data, extracted_hmac):
             raise ValueError("File integrity check failed!")
 
-        marker_index = hidden_data.find(MAGIC_MARKER)
+        marker_index = hidden_data.find(self.MAGIC_MARKER)
         if marker_index == -1:
             raise ValueError("No hidden data found in this GIF.")
-        start_index = marker_index + len(MAGIC_MARKER)
+        start_index = marker_index + len(self.MAGIC_MARKER)
 
         if hidden_data[start_index:start_index + 16] != key_hash:
             raise ValueError("Incorrect encryption key!")
@@ -367,7 +365,7 @@ class GIFSteganographyLogic:
             raise ValueError("Metadata section incomplete or corrupt.")
         encrypted_metadata = hidden_data[metadata_start:metadata_start + metadata_length]
         metadata = self.cipher.decrypt(encrypted_metadata)
-        if not metadata.startswith(METADATA_MARKER):
+        if not metadata.startswith(self.METADATA_MARKER):
             raise ValueError("No metadata found in this GIF.")
         author = metadata[4:54].strip().decode('utf-8', errors='replace')
         timestamp = metadata[54:74].strip().decode('utf-8')

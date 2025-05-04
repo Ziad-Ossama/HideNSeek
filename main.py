@@ -2,16 +2,12 @@ import customtkinter as ctk
 from tkinter import filedialog, messagebox, ttk
 from PIL import Image, ImageTk
 import numpy as np
-from cryptography.fernet import Fernet
 import os
 import threading
 import hashlib
-import time
-import uuid
 from datetime import datetime
 import pyperclip
 import json
-import tempfile
 import gc
 import struct
 from img import SteganographyLogic
@@ -727,12 +723,10 @@ class SteganographyApp:
                         font=("Helvetica", 12, "bold")
                     )
                 
-                # Make sure the label is added to the UI
                 try:
                     # First, show the label if it was previously hidden
                     self.entropy_label.pack(pady=(0, button_pady))
                 except:
-                    # If there's an error (like if it's already packed), pack it again
                     self.entropy_label.pack_forget()
                     self.entropy_label.pack(pady=(0, button_pady))
                 
@@ -767,8 +761,8 @@ class SteganographyApp:
                 ))
                 
             except Exception as e:
-                self.root.after(0, lambda e=e: messagebox.showerror("Carrier Fail", f"Failed to Load Image"))
-                self.root.after(0, lambda e=e: self.carrier_image_status.configure(text=f"Failed to Load Image", text_color="red"))
+                self.root.after(0, lambda e=e: messagebox.showerror("Carrier Fail", "Failed to Load Image"))
+                self.root.after(0, lambda e=e: self.carrier_image_status.configure(text="Failed to Load Image", text_color="red"))
                 self.root.after(0, self.reset_fields)
                 
             finally:
@@ -781,7 +775,7 @@ class SteganographyApp:
             try:
                 Image.open(new_path).verify()
             except Exception as e:
-                self.root.after(0, lambda: messagebox.showerror("Carrier Fail", f"Invalid Image File"))
+                self.root.after(0, lambda: messagebox.showerror("Carrier Fail", "Invalid Image File"))
                 # Reset all fields regardless of whether there was a previous image
                 self.root.after(0, self.reset_fields)
                 return
@@ -791,8 +785,8 @@ class SteganographyApp:
             self._load_carrier_image()
             
         except Exception as e:
-            logging.error(f"Failed to load carrier image")
-            self.root.after(0, lambda: messagebox.showerror("Carrier Fail", f"Failed to Load Image"))
+            logging.error("Failed to load carrier image")
+            self.root.after(0, lambda: messagebox.showerror("Carrier Fail", "Failed to Load Image"))
             # Reset all fields regardless of whether there was a previous image
             self.root.after(0, self.reset_fields)
         finally:
@@ -1041,7 +1035,7 @@ class SteganographyApp:
             self.set_button_state(self.extract_button, "disabled", operation=True)
             if not self.carrier_image_path:
                 messagebox.showerror("Carrier Fail", "Select a carrier image.")
-                self.root.after(0, lambda: self.update_progress(0))  # Reset progress on error
+                self.root.after(0, lambda: self.update_progress(0))  
                 self.set_button_state(self.extract_button, "normal", operation=True)
                 return
 
@@ -1049,19 +1043,19 @@ class SteganographyApp:
                 current_hash = hashlib.sha256(f.read()).hexdigest()
             if self.carrier_image_hash != current_hash:
                 messagebox.showerror("Carrier Fail", "Carrier image has been modified since loading!")
-                self.root.after(0, lambda: self.update_progress(0))  # Reset progress on error
+                self.root.after(0, lambda: self.update_progress(0))  
                 self.set_button_state(self.extract_button, "normal", operation=True)
                 return
 
             key_str = self.key_entry.get().strip()
             if not key_str:
                 messagebox.showerror("Extraction Error", "Please provide a valid encryption key.")
-                self.root.after(0, lambda: self.update_progress(0))  # Reset progress on error
+                self.root.after(0, lambda: self.update_progress(0)) 
                 self.set_button_state(self.extract_button, "normal", operation=True)
                 return
 
             if not self.image_logic.get_cipher(key_str, self.root):
-                self.root.after(0, lambda: self.update_progress(0))  # Reset progress on error
+                self.root.after(0, lambda: self.update_progress(0))  
                 self.set_button_state(self.extract_button, "normal", operation=True)
                 return
 
@@ -1139,7 +1133,7 @@ class SteganographyApp:
             self.update_progress(10)
             
             # First check if this is a steganography image
-            is_stego, message = self.detect_image_steganography(self.carrier_image_path)
+            is_stego = self.detect_image_steganography(self.carrier_image_path)
             if not is_stego:
                 messagebox.showinfo("Information", "This Is Not a Steganography Image.")
                 self.update_progress(0)
@@ -1211,11 +1205,11 @@ class SteganographyApp:
                 elif "password mismatch" in error_str or "incorrect password" in error_str:
                     messagebox.showerror("Extraction Error", "The Encryption Key or The Password is Incorrect.")
                 else:
-                    messagebox.showerror("Extraction Error", f"Error Reading Image Metadata")
+                    messagebox.showerror("Extraction Error", "Error Reading Image Metadata")
             
         except Exception as e:
-            logging.error(f"Failed to view Image Metadata")
-            messagebox.showerror("Extraction Error", f"Failed to view Image Metadata")
+            logging.error("Failed to view Image Metadata")
+            messagebox.showerror("Extraction Error", "Failed to view Image Metadata")
             
         finally:
             self.update_progress(0)
@@ -1302,7 +1296,7 @@ class SteganographyApp:
                 print(f"[StegoDetector] Magic marker {MAGIC_MARKER.hex()} found!")
                 return True, "Steganography detected in the image!"
             else:
-                print(f"[StegoDetector] Magic marker not found at start of hidden data.")
+                print("[StegoDetector] Magic marker not found at start of hidden data.")
                 # It might still be steganography but not from our application
                 return True, "Possible steganography detected, but not from this application."
 
@@ -1315,7 +1309,6 @@ class SteganographyApp:
         try:
             # Verify the GIF is valid
             if not self.validate_gif(new_path):
-                # Reset function is called inside validate_gif if it fails
                 return
                 
             # Update the carrier path and start loading
@@ -1323,8 +1316,8 @@ class SteganographyApp:
             self._load_carrier_gif()
             
         except Exception as e:
-            logging.error(f"Failed to load carrier GIF")
-            self.root.after(0, lambda: messagebox.showerror("Carrier Fail", f"Failed to Load GIF"))
+            logging.error("Failed to load carrier GIF")
+            self.root.after(0, lambda: messagebox.showerror("Carrier Fail", "Failed to Load GIF"))
             # Reset all fields regardless of whether there was a previous GIF
             self.root.after(0, self.reset_gif_fields)
         finally:
@@ -1365,7 +1358,7 @@ class SteganographyApp:
                 ))
                 self.root.after(0, lambda: self.gif_password_entry.configure(
                     state="normal", 
-                    placeholder_text="Enter password (optional)" , 
+                    placeholder_text="Enter password " , 
                     show="*"
                 ))
                 self.root.after(0, lambda: self.gif_author_entry.configure(
@@ -1374,9 +1367,9 @@ class SteganographyApp:
                 ))
                 
             except Exception as e:
-                self.root.after(0, lambda: messagebox.showerror("Carrier Fail", f"Failed to Load GIF"))
+                self.root.after(0, lambda: messagebox.showerror("Carrier Fail", "Failed to Load GIF"))
                 self.root.after(0, lambda: self.carrier_gif_status.configure(
-                    text=f"Failed to Load GIF", 
+                    text="Failed to Load GIF", 
                     text_color="red"
                 ))
                 
@@ -1404,7 +1397,6 @@ class SteganographyApp:
         
         # Validate the GIF before setting the carrier path
         if not self.validate_gif(file_path):
-            # Do not show another error message here; validate_gif already shows "Not a Valid GIF File (Invalid Header)"
             self.carrier_gif_path = None
             self.carrier_gif_status.configure(text="No GIF selected", text_color="red")
             self.root.after(0, self.reset_gif_fields)  # Reset fields to initial state
@@ -1433,7 +1425,6 @@ class SteganographyApp:
             self.carrier_gif_path = file_path
 
         if not self.validate_gif(self.carrier_gif_path):
-            # Do not show another error message here; validate_gif already shows "Not a Valid GIF File (Invalid Header)"
             self.carrier_gif_path = None
             self.carrier_gif_status.configure(text="No GIF selected", text_color="red")
             return
@@ -1680,7 +1671,7 @@ class SteganographyApp:
         self.set_button_state(self.gif_extract_button, "disabled", operation=True)
         if not self.carrier_gif_path:
             messagebox.showerror("Carrier Fail", "Select a carrier GIF.")
-            self.root.after(0, lambda: self.update_gif_progress(0))  # Reset progress on error
+            self.root.after(0, lambda: self.update_gif_progress(0))  
             self.set_button_state(self.gif_extract_button, "normal", operation=True)
             return
 
@@ -1688,19 +1679,19 @@ class SteganographyApp:
             current_hash = hashlib.sha256(f.read()).hexdigest()
         if self.carrier_gif_hash != current_hash:
             messagebox.showerror("Carrier Fail", "Carrier GIF has been modified since loading!")
-            self.root.after(0, lambda: self.update_gif_progress(0))  # Reset progress on error
+            self.root.after(0, lambda: self.update_gif_progress(0))  
             self.set_button_state(self.gif_extract_button, "normal", operation=True)
             return
 
         key_str = self.gif_key_entry.get().strip()
         if not key_str:
             messagebox.showerror("Extraction Error", "Please Provide a Valid Encryption Key.")
-            self.root.after(0, lambda: self.update_gif_progress(0))  # Reset progress on error
+            self.root.after(0, lambda: self.update_gif_progress(0))  
             self.set_button_state(self.gif_extract_button, "normal", operation=True)
             return
 
         if not self.gif_logic.get_cipher(key_str, self.root):
-            self.root.after(0, lambda: self.update_gif_progress(0))  # Reset progress on error
+            self.root.after(0, lambda: self.update_gif_progress(0))  
             self.set_button_state(self.gif_extract_button, "normal", operation=True)
             return
 
@@ -1777,7 +1768,7 @@ class SteganographyApp:
             self.update_gif_progress(10)
             
             # First check if this is a steganography GIF
-            is_stego, message = self.detect_gif_steganography(self.carrier_gif_path)
+            is_stego = self.detect_gif_steganography(self.carrier_gif_path)
             if not is_stego:
                 messagebox.showinfo("Information", "This is not a stego GIF.")
                 self.update_gif_progress(0)
@@ -1865,75 +1856,51 @@ class SteganographyApp:
             
             # Check if the file exists
             if not os.path.exists(gif_path):
-                print(f"[StegoDetector] GIF file does not exist: {gif_path}")
                 return False, "GIF file does not exist"
-                
             # Try to read the GIF file
             try:
-                print(f"[StegoDetector] Reading GIF file: {gif_path}")
                 with open(gif_path, "rb") as f:
                     gif_data = f.read()
-                print(f"[StegoDetector] GIF data loaded, size: {len(gif_data)} bytes")
             except Exception as e:
-                print(f"[StegoDetector] Failed to read GIF file: {str(e)}")
                 return False, f"Failed to read GIF file: {str(e)}"
-                
             # Check for valid GIF header
             if not gif_data.startswith(b'GIF8'):
-                print("[StegoDetector] Not a valid GIF file (invalid header)")
-                return False, "Not a valid GIF file"
-                
+                return False, "Not a valid GIF file"               
             # Find the GIF trailer byte (0x3B)
             trailer_pos = gif_data.rfind(b'\x3B')
             if trailer_pos == -1:
-                print("[StegoDetector] Invalid GIF: No trailer byte found")
-                return False, "Invalid GIF: No trailer byte found"
-                
+                return False, "Invalid GIF: No trailer byte found"                
             # Check if there's data after the GIF trailer
             if trailer_pos + 1 >= len(gif_data):
-                print("[StegoDetector] No data after GIF trailer - this is a normal GIF")
-                return False, "No steganography detected: No data after GIF trailer"
-                
+                return False, "No steganography detected: No data after GIF trailer"                
             # Check the data after trailer
             remaining_data = gif_data[trailer_pos + 1:]
-            print(f"[StegoDetector] Found {len(remaining_data)} bytes of data after GIF trailer")
-            
             # Need at least 4 bytes for length + 4 for magic marker
             if len(remaining_data) < 8:
-                print("[StegoDetector] Insufficient data after GIF trailer")
-                return False, "No steganography detected: Insufficient data after GIF trailer"
-                
+                return False, "No steganography detected: Insufficient data after GIF trailer"               
             # Extract length prefix
             try:
                 data_length = struct.unpack(">I", remaining_data[:4])[0]
-                print(f"[StegoDetector] Data length from prefix: {data_length} bytes")
-                
                 # Check if length is reasonable
                 if data_length <= 0 or data_length > 1024 * 1024 * 100:  # 100MB max
-                    print(f"[StegoDetector] Invalid data length: {data_length}")
                     return False, f"No steganography detected: Invalid data length ({data_length})"
                     
                 # Check if there's enough data as specified by length
                 if 4 + data_length > len(remaining_data):
-                    print("[StegoDetector] Incomplete data after GIF trailer")
                     return False, "No steganography detected: Incomplete data after GIF trailer"
                     
                 # Check for the magic marker - directly using the byte sequence
                 MAGIC_MARKER = b'\xDE\xAD\xBE\xEF'
                 if remaining_data[4:8] == MAGIC_MARKER:
-                    print(f"[StegoDetector] Magic marker {MAGIC_MARKER.hex()} found!")
                     return True, "Steganography detected in the GIF!"
                 else:
-                    print("[StegoDetector] Magic marker not found after length prefix")
                     # Might still be steganography but not from our app
                     return True, "Possible steganography detected, but not from this application."
                     
             except Exception as e:
-                print(f"[StegoDetector] Error analyzing data after trailer: {str(e)}")
                 return False, f"Detection error: {str(e)}"
                 
         except Exception as e:
-            print(f"[StegoDetector] Error during detection: {str(e)}")
             return False, f"Detection error: {str(e)}"
 
     def validate_gif(self, gif_path):
