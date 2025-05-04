@@ -1,4 +1,4 @@
-import numpy as np
+from datetime import datetime
 from PIL import Image
 from cryptography.fernet import Fernet, InvalidToken
 from cryptography.hazmat.primitives import hashes, hmac
@@ -10,9 +10,8 @@ import zlib
 import base64
 import logging
 import time
-from datetime import datetime
 import secrets
-from base64 import b64encode, b64decode
+import numpy as np
 
 # Setup logging
 logging.basicConfig(filename='steganography.log', level=logging.INFO,
@@ -31,7 +30,7 @@ class SteganographyLogic:
         """Generate a random encryption key as a string."""
         # Generate a random 32-byte key and encode it as a base64 string
         key_bytes = secrets.token_bytes(32)
-        key_str = b64encode(key_bytes).decode('utf-8')
+        key_str = base64.b64encode(key_bytes).decode('utf-8')
         return key_str
     
     def get_cipher(self, key_str, root=None):
@@ -42,9 +41,9 @@ class SteganographyLogic:
             self.cipher = Fernet(key)
             return True
         except Exception as e:
-            logging.error(f"Cipher setup failed")
+            logging.error("Cipher setup failed")
             if root:
-                root.after(0, lambda: root.show_error(f"Invalid key"))
+                root.after(0, lambda: root.show_error("Invalid key"))
             return False
 
     def compress_data(self, data):
@@ -56,7 +55,7 @@ class SteganographyLogic:
         try:
             return zlib.decompress(compressed_data)
         except zlib.error as e:
-            raise ValueError(f"Decompression failed")
+            raise ValueError("Decompression failed")
 
     def derive_password_hash(self, password):
         """Derive a 32-byte hash from the password using PBKDF2HMAC."""
@@ -92,7 +91,7 @@ class SteganographyLogic:
             raise ValueError("Carrier image does not exist")
         for path in data_file_paths:
             if not os.path.exists(path):
-                raise ValueError(f"Data file does not exist")
+                raise ValueError("Data file does not exist")
 
         try:
             carrier_image = Image.open(image_path).convert('RGB')
@@ -286,5 +285,5 @@ class SteganographyLogic:
             logging.error(f"Extraction : {str(e)}")
             raise
         except Exception as e:
-            logging.error(f"Extraction failed")
-            raise ValueError(f"Extraction failed")
+            logging.error("Extraction failed")
+            raise ValueError("Extraction failed")

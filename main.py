@@ -1,20 +1,20 @@
-import customtkinter as ctk
 from tkinter import filedialog, messagebox, ttk
 from PIL import Image, ImageTk
+from datetime import datetime
+import customtkinter as ctk
 import numpy as np
 import os
 import threading
 import hashlib
-from datetime import datetime
 import pyperclip
 import json
 import gc
 import struct
-from img import SteganographyLogic
-from gif import GIFSteganographyLogic
 from tkinterdnd2 import TkinterDnD, DND_FILES
 import sys
 import logging
+from img import SteganographyLogic
+from gif import GIFSteganographyLogic
 
 if getattr(sys, 'frozen', False):
     base_path = sys._MEIPASS

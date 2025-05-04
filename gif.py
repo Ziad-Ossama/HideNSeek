@@ -1,6 +1,8 @@
 from cryptography.fernet import Fernet
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from cryptography.hazmat.primitives import hashes
+from datetime import datetime
+from tkinter import messagebox
 import zlib
 import os
 import hmac
@@ -8,11 +10,7 @@ import hashlib
 import struct
 import time
 import logging
-from datetime import datetime
-from PIL import Image
-from tkinter import messagebox
 import secrets
-from base64 import b64encode, b64decode
 import base64
 
 # Setup logging for debugging
@@ -33,7 +31,7 @@ class GIFSteganographyLogic:
         """Generate a random encryption key as a string."""
         # Generate a random 32-byte key and encode it as a base64 string
         key_bytes = secrets.token_bytes(32)
-        key_str = b64encode(key_bytes).decode('utf-8')
+        key_str = base64.b64encode(key_bytes).decode('utf-8')
         return key_str
     
     def generate_hmac(self, data):
