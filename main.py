@@ -1201,9 +1201,9 @@ class SteganographyApp:
                 
                 # Check for specific errors
                 if "key mismatch" in error_str or "incorrect key" in error_str:
-                    messagebox.showerror("Extraction Error", "Password Mismatch or Key Mismatch")
+                    messagebox.showerror("Extraction Error", "The Encryption Key or The Password is Incorrect.")
                 elif "password mismatch" in error_str or "incorrect password" in error_str:
-                    messagebox.showerror("Extraction Error", "Password Mismatch or Key Mismatch")
+                    messagebox.showerror("Extraction Error", "The Encryption Key or The Password is Incorrect.")
                 else:
                     messagebox.showerror("Extraction Error", "Error Reading Image Metadata")
             
@@ -1742,7 +1742,7 @@ class SteganographyApp:
 
         except Exception as e:
             logging.error(f"Extraction failed: {str(e)}")
-            self.root.after(0, lambda: messagebox.showerror("Extraction Error", str(e) ))
+            self.root.after(0, lambda: messagebox.showerror("Extraction Error", {str(e)} ))
             self.root.after(0, lambda: self.update_gif_progress(0))
             self.root.after(0, self.reset_gif_fields)  # Reset immediately on error
         finally:
@@ -1835,11 +1835,11 @@ class SteganographyApp:
                 
                 # Check for specific errors
                 if "incorrect encryption key" in error_str or "key mismatch" in error_str:
-                    messagebox.showerror("Extraction Error", "Password Mismatch or Key Mismatch")
+                    messagebox.showerror("Extraction Error", "The Password or The Encryption Key is Incorrect.")
                 elif "incorrect password" in error_str or "password mismatch" in error_str:
-                    messagebox.showerror("Extraction Error", "Password Mismatch or Key Mismatch")
+                    messagebox.showerror("Extraction Error", "The Password or The Encryption Key is Incorrect.")
                 else:
-                    messagebox.showerror("Extraction Error", "Password Mismatch or Key Mismatch")
+                    messagebox.showerror("Extraction Error", f"Error reading GIF Metadata")
             
         except Exception as e:
             logging.error(f"Extraction Error : {str(e)}")
@@ -1922,7 +1922,7 @@ class SteganographyApp:
             try:
                 Image.open(gif_path).verify()
             except Exception as e:
-                self.root.after(0, lambda: messagebox.showerror("Carrier Fail", "Invalid GIF Format"))
+                self.root.after(0, lambda: messagebox.showerror("Carrier Fail", f"Invalid GIF Format"))
                 self.root.after(0, self.reset_gif_fields)  # Reset all fields if invalid
                 return False
                 

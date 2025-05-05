@@ -253,7 +253,7 @@ class SteganographyLogic:
             try:
                 metadata = self.cipher.decrypt(encrypted_metadata)
             except InvalidToken:
-                raise ValueError("Password Mismatch or Key Mismatch")
+                raise ValueError("Metadata decryption failed: incorrect key")
 
             if not metadata.startswith(self.METADATA_MARKER):
                 raise ValueError("Invalid metadata: magic bytes missing")
