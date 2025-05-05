@@ -23,7 +23,7 @@ class GIFSteganographyLogic:
         self.key = None
         self.cipher = None
         self.hmac_key = None
-        self.MAX_FILES_EMBED = 40  # Maximum files that can be embedded
+        self.MAX_FILES_EMBED = 20  # Maximum files that can be embedded
         self.MAGIC_MARKER = b'\xDE\xAD\xBE\xEF'
         self.METADATA_MARKER = b'\xCA\xFE\xBA\xBE'
 
