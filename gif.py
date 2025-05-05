@@ -213,7 +213,7 @@ class GIFSteganographyLogic:
         hidden_data = hidden_data[:-32]
         if not self.verify_hmac(hidden_data, extracted_hmac):
             logging.error("HMAC verification failed")
-            raise ValueError("File integrity check failed!")
+            raise ValueError("Password Mismatch or Key Mismatch")
 
         marker_index = hidden_data.find(self.MAGIC_MARKER)
         if marker_index == -1:
@@ -221,10 +221,10 @@ class GIFSteganographyLogic:
         start_index = marker_index + len(self.MAGIC_MARKER)
 
         if hidden_data[start_index:start_index + 16] != key_hash:
-            raise ValueError("Incorrect encryption key!")
+            raise ValueError("Password Mismatch or Key Mismatch")
         start_index += 16
         if hidden_data[start_index:start_index + 16] != password_hash:
-            raise ValueError("Incorrect password!")
+            raise ValueError("Password Mismatch or Key Mismatch")
         start_index += 16
 
         file_count = struct.unpack(">I", hidden_data[start_index:start_index + 4])[0]
@@ -305,7 +305,7 @@ class GIFSteganographyLogic:
     def view_metadata(self, carrier_gif_path, key_str, password, progress_callback):
         """View metadata from the carrier GIF."""
         if not self.get_cipher(key_str):
-            raise ValueError("Invalid encryption key")
+            raise ValueError("Password Mismatch or Key Mismatch")
 
         password_hash = self.derive_password_hash(password) if password else b'\x00' * 16
         key_hash = hashlib.sha256(self.key).digest()[:16]
@@ -325,7 +325,7 @@ class GIFSteganographyLogic:
         logging.info(f"Extracted HMAC: {extracted_hmac.hex()}")
         logging.info(f"Computed HMAC: {computed_hmac.hex()}")
         if not self.verify_hmac(hidden_data, extracted_hmac):
-            raise ValueError("File integrity check failed!")
+            raise ValueError("Password Mismatch or Key Mismatch")
 
         marker_index = hidden_data.find(self.MAGIC_MARKER)
         if marker_index == -1:
@@ -333,10 +333,10 @@ class GIFSteganographyLogic:
         start_index = marker_index + len(self.MAGIC_MARKER)
 
         if hidden_data[start_index:start_index + 16] != key_hash:
-            raise ValueError("Incorrect encryption key!")
+            raise ValueError("Password Mismatch or Key Mismatch")
         start_index += 16
         if hidden_data[start_index:start_index + 16] != password_hash:
-            raise ValueError("Incorrect password!")
+            raise ValueError("Password Mismatch or Key Mismatch")
         start_index += 16
 
         file_count = struct.unpack(">I", hidden_data[start_index:start_index + 4])[0]
