@@ -42,30 +42,43 @@ class GIFSteganographyLogic:
         """Verify HMAC for data integrity."""
         return hmac.compare_digest(self.generate_hmac(data), expected_hmac)
 
-    def get_cipher(self, key_str, root=None):
-        """Initialize the cipher with the provided key."""
+    def get_cipher(self, key_str, root=None, key_is_generated=False):
+        """
+        Initialize the cipher with the provided key or password.
+        If key_is_generated is True, use the key as a base64-encoded 32-byte Fernet key.
+        If False, derive a Fernet key from the password using PBKDF2HMAC.
+        """
         if not key_str:
             if root:
                 root.after(0, lambda: messagebox.showerror("Error", "Please provide an encryption key."))
             return False
+        key_str = key_str.strip()
         try:
-            key_bytes = key_str.encode('utf-8')
-            key = base64.urlsafe_b64encode(hashlib.sha256(key_bytes).digest())
+            if key_is_generated:
+                # Use the generated key directly (must be base64, 32 bytes)
+                key_bytes = base64.b64decode(key_str)
+                if len(key_bytes) != 32:
+                    raise ValueError("Generated key must be 32 bytes (base64-encoded).")
+                key = base64.urlsafe_b64encode(key_bytes)
+            else:
+                # Derive a Fernet key from the password
+                kdf = PBKDF2HMAC(
+                    algorithm=hashes.SHA256(),
+                    length=32,
+                    salt=b"YrLgT7hpEq2bYw!!7WC9tW8ogVVLhowXv9-iko4MghAuXixm34d6TdtYRA*9ZWiLi7aLWLNw77uEMAoCPZZVd3Y*RT7no_7@pYHm",  # Use a constant salt for reproducibility
+                    iterations=100000,
+                )
+                key_bytes = kdf.derive(key_str.encode('utf-8'))
+                key = base64.urlsafe_b64encode(key_bytes)
             self.cipher = Fernet(key)
-            # Also generate the HMAC key
-            kdf = PBKDF2HMAC(
-                algorithm=hashes.SHA256(),
-                length=32,
-                salt=b"YrLgT7hpEq2bYw!!7WC9tW8ogVVLhowXv9-iko4MghAuXixm34d6TdtYRA*9ZWiLi7aLWLNw77uEMAoCPZZVd3Y*RT7no_7@pYHm",
-                iterations=100000,
-            )
-            self.hmac_key = kdf.derive(key_bytes)
+            # HMAC key can be derived from key_bytes or key_str as before
+            self.hmac_key = hashlib.sha256(key_bytes).digest()
             self.key = key_bytes
             return True
         except Exception as e:
-            logging.error(f"Cipher setup failed: {str(e)}")
+            logging.error("Cipher setup failed:" + str(e))
             if root:
-                root.after(0, lambda: messagebox.showerror("Error", f"Invalid encryption key: {str(e)}"))
+                root.after(0, lambda: messagebox.showerror("Error", "Invalid key or password:" + str(e)))
             return False
 
     def derive_password_hash(self, password):
@@ -102,16 +115,20 @@ class GIFSteganographyLogic:
         if len(remaining_data) == 0:
             raise ValueError("No hidden data found after GIF trailer.")
 
-        # Expect a length prefix (remove legacy format handling)
-        if len(remaining_data) < 4:
-            raise ValueError("No hidden data found after GIF trailer (insufficient data for length prefix).")
+        # Check for magic marker before trusting the length
+        if len(remaining_data) < 8:
+            raise ValueError("No hidden data found after GIF trailer (insufficient data for length and marker).")
 
         hidden_data_length = struct.unpack(">I", remaining_data[:4])[0]
+        # Check for magic marker
+        if not remaining_data[4:8] == self.MAGIC_MARKER:
+            raise ValueError("No valid stego data found after GIF trailer (magic marker missing).")
+
         available_length = len(remaining_data) - 4
         logging.info(f"Parsed hidden data length: {hidden_data_length} bytes, Available: {available_length} bytes")
 
         # Adjust the reasonable length to be more appropriate for typical use
-        MAX_REASONABLE_LENGTH = 1024 * 1024 * 1000  # 1000 MB max (adjust based on your needs)
+        MAX_REASONABLE_LENGTH = 1024 * 1024 * 1000  # 1000 MB max 
         if hidden_data_length > MAX_REASONABLE_LENGTH:
             raise ValueError(f"Hidden data length ({hidden_data_length} bytes) exceeds maximum allowed ({MAX_REASONABLE_LENGTH} bytes). Possible data corruption or incorrect file.")
 
@@ -124,14 +141,12 @@ class GIFSteganographyLogic:
 
         return gif_part, hidden_data
 
-    def embed_data(self, carrier_gif_path, data_paths, key_str, password, author, progress_callback):
+    def embed_data(self, carrier_gif_path, data_paths, key_str, password, author, progress_callback, key_is_generated=False):
         """Embed data into the carrier GIF."""
-        if not self.get_cipher(key_str):
+        if not self.get_cipher(key_str, None, key_is_generated):
             raise ValueError("Invalid encryption key")
-
         if len(data_paths) > self.MAX_FILES_EMBED:
             raise ValueError(f"Cannot embed more than {self.MAX_FILES_EMBED} files.")
-
         password_hash = self.derive_password_hash(password) if password else b'\x00' * 16
         key_hash = hashlib.sha256(self.key).digest()[:16]
 
@@ -203,7 +218,7 @@ class GIFSteganographyLogic:
         try:
             _, hidden_data = self.split_gif_data(file_data)
         except ValueError as e:
-            logging.error(f"Failed to split GIF data: {str(e)}")
+            logging.error(f"Failed to split GIF data: {e}")
             raise
 
         if len(hidden_data) < 32:
@@ -213,7 +228,7 @@ class GIFSteganographyLogic:
         hidden_data = hidden_data[:-32]
         if not self.verify_hmac(hidden_data, extracted_hmac):
             logging.error("HMAC verification failed")
-            raise ValueError("File integrity check failed!")
+            raise ValueError("Password Mismatch or Key Mismatch")
 
         marker_index = hidden_data.find(self.MAGIC_MARKER)
         if marker_index == -1:
@@ -221,10 +236,10 @@ class GIFSteganographyLogic:
         start_index = marker_index + len(self.MAGIC_MARKER)
 
         if hidden_data[start_index:start_index + 16] != key_hash:
-            raise ValueError("Incorrect encryption key!")
+            raise ValueError("Password Mismatch or Key Mismatch")
         start_index += 16
         if hidden_data[start_index:start_index + 16] != password_hash:
-            raise ValueError("Incorrect password!")
+            raise ValueError("Password Mismatch or Key Mismatch")
         start_index += 16
 
         file_count = struct.unpack(">I", hidden_data[start_index:start_index + 4])[0]
@@ -247,7 +262,7 @@ class GIFSteganographyLogic:
                 file_metadata.append((filename, ext, data_length))
             except Exception as e:
                 logging.error(f"Failed to decode metadata for file {i + 1}: {str(e)}")
-                raise ValueError(f"Failed to decode metadata for file {i + 1}: {str(e)}")
+                raise ValueError(f"Failed to decode metadata for file {i + 1}: {e}")
 
         files_data = []
         batch_size = 5
@@ -269,7 +284,7 @@ class GIFSteganographyLogic:
                     progress_callback(50 + (25 * (i + 1) // file_count))
                 except Exception as e:
                     logging.error(f"Failed to decrypt/decompress file {filename}: {str(e)}")
-                    raise ValueError(f"Failed to decrypt/decompress file {filename}: {str(e)}")
+                    raise ValueError(f"Failed to decrypt/decompress file {filename}: {e}")
                 finally:
                     del encrypted_data, decrypted_data, decompressed_data
 
@@ -286,7 +301,7 @@ class GIFSteganographyLogic:
             logging.info(f"Metadata type after decryption: {type(metadata)}")
         except Exception as e:
             logging.error(f"Failed to decrypt metadata: {str(e)}")
-            raise ValueError(f"Failed to decrypt metadata: {str(e)}")
+            raise ValueError(f"Failed to decrypt metadata:" + str(e))
 
         if not metadata.startswith(self.METADATA_MARKER):
             raise ValueError("No metadata found in this GIF.")
@@ -296,8 +311,8 @@ class GIFSteganographyLogic:
             timestamp = metadata[54:74].strip().decode('utf-8', errors='replace')
             timestamp_readable = datetime.fromtimestamp(int(timestamp)).strftime('%Y-%m-%d %H:%M:%S') if timestamp.isdigit() else "Invalid timestamp"
         except Exception as e:
-            logging.error(f"Failed to decode metadata fields: {str(e)}")
-            raise ValueError(f"Failed to decode metadata fields: {str(e)}")
+            logging.error(f"Failed to decode metadata fields:" + str(e))
+            raise ValueError(f"Failed to decode metadata fields:" + str(e))
 
         progress_callback(100)
         return files_data, author, timestamp_readable
@@ -333,10 +348,10 @@ class GIFSteganographyLogic:
         start_index = marker_index + len(self.MAGIC_MARKER)
 
         if hidden_data[start_index:start_index + 16] != key_hash:
-            raise ValueError("Incorrect encryption key!")
+            raise ValueError("Password Mismatch or Key Mismatch")
         start_index += 16
         if hidden_data[start_index:start_index + 16] != password_hash:
-            raise ValueError("Incorrect password!")
+            raise ValueError("Password Mismatch or Key Mismatch")
         start_index += 16
 
         file_count = struct.unpack(">I", hidden_data[start_index:start_index + 4])[0]

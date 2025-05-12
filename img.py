@@ -33,17 +33,41 @@ class SteganographyLogic:
         key_str = base64.b64encode(key_bytes).decode('utf-8')
         return key_str
     
-    def get_cipher(self, key_str, root=None):
-        """Initialize the encryption cipher with the provided key."""
+    def get_cipher(self, key_str, root=None, key_is_generated=False):
+        """
+        Initialize the cipher with the provided key or password.
+        If key_is_generated is True, use the key as a base64-encoded 32-byte Fernet key.
+        If False, derive a Fernet key from the password using PBKDF2HMAC.
+        """
+        if not key_str:
+            if root:
+                root.after(0, lambda: root.show_error("Please provide an encryption key or password."))
+            return False
+        key_str = key_str.strip()
         try:
-            key_bytes = key_str.encode('utf-8')
-            key = base64.urlsafe_b64encode(hashlib.sha256(key_bytes).digest())
+            if key_is_generated:
+                # Use the generated key directly (must be base64, 32 bytes)
+                key_bytes = base64.b64decode(key_str)
+                if len(key_bytes) != 32:
+                    raise ValueError("Generated key must be 32 bytes (base64-encoded).")
+                key = base64.urlsafe_b64encode(key_bytes)
+            else:
+                # Derive a Fernet key from the password
+                kdf = PBKDF2HMAC(
+                    algorithm=hashes.SHA256(),
+                    length=32,
+                    salt=b"P673XfybNqgEm9PPBDtoP4CFqroTHRjG.vE94hDftUGXK.AkjHqp-yqmh2DAi3@4D-ewUu@xp_GC7eqegGVXz4MYECgH-8vCumU*",  # Use a constant salt for reproducibility
+                    iterations=100000,
+                )
+                key_bytes = kdf.derive(key_str.encode('utf-8'))
+                key = base64.urlsafe_b64encode(key_bytes)
             self.cipher = Fernet(key)
+            self.key = key_bytes
             return True
         except Exception as e:
-            logging.error("Cipher setup failed")
+            logging.error("Cipher setup failed:" + str(e))
             if root:
-                root.after(0, lambda: root.show_error("Invalid key"))
+                root.after(0, lambda: root.show_error("Invalid key or password:" + str(e)))
             return False
 
     def compress_data(self, data):
@@ -61,7 +85,7 @@ class SteganographyLogic:
         """Derive a 32-byte hash from the password using PBKDF2HMAC."""
         if not password:
             return b'\x00' * 32
-        salt = b'P673XfybNqgEm9PPBDtoP4CFqroTHRjG.vE94hDftUGXK.AkjHqp-yqmh2DAi3@4D-ewUu@xp_GC7eqegGVXz4MYECgH-8vCumU*'
+        salt = b'P673XfybNqgEm9PPBDtoP4CFqroTHRjG.vE94hDftUGXK.AkjHqp-yqmh2DAi3@4D-ewUu@xp_GC7eqegGVXz4MYECgH-8vCumU*'  # Use the same salt as above for consistency
         kdf = PBKDF2HMAC(algorithm=hashes.SHA256(), length=32, salt=salt, iterations=100000)
         return kdf.derive(password.encode('utf-8'))
 
@@ -81,10 +105,10 @@ class SteganographyLogic:
         except Exception:
             return False
 
-    def embed_data(self, image_path, data_file_paths, key_str, password, author, update_progress_callback):
+    def embed_data(self, image_path, data_file_paths, key_str, password, author, update_progress_callback, key_is_generated=False):
         """Embed multiple files into an image."""
-        if not self.get_cipher(key_str):
-            raise ValueError("Invalid Encryption key")
+        if not self.get_cipher(key_str, None, key_is_generated):
+            raise ValueError("Invalid encryption key or password")
         if len(data_file_paths) > self.MAX_FILES_EMBED:
             raise ValueError(f"Cannot embed more than {self.MAX_FILES_EMBED} files")
         if not os.path.exists(image_path):
@@ -92,6 +116,10 @@ class SteganographyLogic:
         for path in data_file_paths:
             if not os.path.exists(path):
                 raise ValueError("Data file does not exist")
+        # Password length validation
+        if not key_is_generated:
+            if len(password) < 5 or len(password) > 12:
+                raise ValueError("Password must be between 5 and 12 characters.")
 
         try:
             carrier_image = Image.open(image_path).convert('RGB')
@@ -102,7 +130,7 @@ class SteganographyLogic:
             if image_array.size == 0:
                 raise ValueError("Image array is empty")
 
-            key_bytes = key_str.encode('utf-8')
+            key_bytes = self.key
             all_encrypted_data = bytearray()
             file_metadata = []
             file_count = len(data_file_paths)
@@ -160,14 +188,14 @@ class SteganographyLogic:
             update_progress_callback(90)
             return Image.fromarray(modified_image)
         except ValueError as e:
-            logging.error(f"Embedding failed: {str(e)}")
+            logging.error("Embedding failed:" + str(e))
             raise
         
 
-    def extract_data(self, image_path, key_str, password, update_progress_callback, carrier_filename=None):
+    def extract_data(self, image_path, key_str, password, update_progress_callback, carrier_filename=None, key_is_generated=False):
         """Extract multiple files and metadata from an image with custom filename format."""
-        if not self.get_cipher(key_str):
-            raise ValueError("Invalid encryption key")
+        if not self.get_cipher(key_str, None, key_is_generated):
+            raise ValueError("Invalid encryption key or password")
         if not os.path.exists(image_path):
             raise ValueError("Carrier image does not exist")
 
@@ -218,7 +246,7 @@ class SteganographyLogic:
             if not hidden_data.startswith(self.MAGIC_MARKER):
                 raise ValueError("Invalid data: magic bytes missing")
 
-            key_bytes = key_str.encode('utf-8')
+            key_bytes = self.key
             stored_key_hash = hidden_data[4:36]
             if hashlib.sha256(key_bytes).digest() != stored_key_hash:
                 raise ValueError("Password Mismatch or Key Mismatch")
@@ -282,8 +310,8 @@ class SteganographyLogic:
             return files_data, author, timestamp_readable
         
         except ValueError as e:
-            logging.error(f"Extraction : {str(e)}")
+            logging.error("Extraction failed:" + str(e))
             raise
         except Exception as e:
             logging.error("Extraction failed")
-            raise ValueError("Extraction failed")
+            raise ValueError("Extraction failed:" + str(e))
