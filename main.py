@@ -296,7 +296,7 @@ class SteganographyApp:
             font=("Helvetica", button_size , "bold")
         )
         self.load_data_button.pack(pady=5)
-        self.data_file_status = ctk.CTkLabel(self.data_section, text="No files selected", text_color="red" , font=("Helvetica", 14, "bold"))
+        self.data_file_status = ctk.CTkLabel(self.data_section, text="No Files Selected", text_color="red" , font=("Helvetica", 14, "bold"))
         self.data_file_status.pack(pady=5)
         self.data_section.drop_target_register(DND_FILES)
         self.data_section.dnd_bind('<<Drop>>', self.drop_data_file)
@@ -439,7 +439,7 @@ class SteganographyApp:
         )
         self.load_gif_data_button.pack(pady=5)
         
-        self.gif_data_file_status = ctk.CTkLabel(self.gif_data_section, text="No files selected", 
+        self.gif_data_file_status = ctk.CTkLabel(self.gif_data_section, text="No Files Selected", 
                                             text_color="red", font=("Helvetica", 14, "bold"))
         self.gif_data_file_status.pack(pady=5)
         
@@ -998,7 +998,7 @@ class SteganographyApp:
 
         except Exception as e:
             logging.error(f"Embedding failed: {str(e)}")
-            self.root.after(0, lambda: messagebox.showerror("Embeding Failed"+ str(e)))
+            self.root.after(0, lambda: messagebox.showerror("Embeding Failed" , str(e)))
             self.root.after(0, lambda: self.update_progress(0))
             self.root.after(0, self.reset_fields)
         finally:
@@ -1138,7 +1138,7 @@ class SteganographyApp:
             # First check if this is a steganography image
             is_stego = self.detect_image_steganography(self.carrier_image_path)
             if not is_stego:
-                messagebox.showinfo("Information", "This Is Not a Steganography Image.")
+                messagebox.showinfo("Information", "This is Not a Steganography Image.")
                 self.update_progress(0)
                 self.set_button_state(self.metadata_button, "normal", operation=True)
                 return
@@ -1235,7 +1235,7 @@ class SteganographyApp:
                 print(f"[StegoDetector] Image array flattened, size: {len(flat_image)} pixels")
             except Exception as e:
                 print(f"[StegoDetector] Error processing image: {str(e)}")
-                return False, f"Error processing image: {e}"
+                return False, f"Error processing image: {str(e)}"
 
             # Extract bits from LSBs
             print("[StegoDetector] Extracting bits from LSBs...")
@@ -1305,7 +1305,7 @@ class SteganographyApp:
 
         except Exception as e:
             print(f"[StegoDetector] Error during detection: {str(e)}")
-            return False, f"Detection error: {e}"
+            return False, f"Detection error: {str(e)}"
 
     def _load_carrier_gif_thread(self, new_path):
         """Thread to load a carrier GIF."""
@@ -1650,7 +1650,7 @@ class SteganographyApp:
                     self.update_history_view()
                     self.root.after(100, self.reset_gif_fields)
                 except Exception as e:
-                    messagebox.showerror("Embedding Error", f"Failed to save stego GIF: {e}")
+                    messagebox.showerror("Embedding Error", f"Failed to save stego GIF: {str(e)}")
                     self.root.after(0, lambda: self.update_gif_progress(0))
                     import gc
                     gc.collect()
@@ -1862,15 +1862,15 @@ class SteganographyApp:
                 
                 # Check for specific errors
                 if "incorrect encryption key" in error_str or "key mismatch" in error_str:
-                    messagebox.showerror("Extraction Error", "The Password or The Encryption Key is Incorrect.")
+                    messagebox.showerror("Extraction Error", "Password Mismatch or key Mismatch.")
                 elif "incorrect password" in error_str or "password mismatch" in error_str:
-                    messagebox.showerror("Extraction Error", "The Password or The Encryption Key is Incorrect.")
+                    messagebox.showerror("Extraction Error", "Password Mismatch or key Mismatch.")
                 else:
                     messagebox.showerror("Extraction Error", f"Error reading GIF Metadata")
             
         except Exception as e:
             logging.error(f"Extraction Error : {str(e)}")
-            messagebox.showerror("Extraction Error", {e})
+            messagebox.showerror("Extraction Error", str(e))
             
         finally:
             self.update_gif_progress(0)
@@ -1889,7 +1889,7 @@ class SteganographyApp:
                 with open(gif_path, "rb") as f:
                     gif_data = f.read()
             except Exception as e:
-                return False, f"Failed to read GIF file: {e}"
+                return False, f"Failed to read GIF file: {str(e)}"
             # Check for valid GIF header
             if not gif_data.startswith(b'GIF8'):
                 return False, "Not a valid GIF file"               
@@ -1925,10 +1925,10 @@ class SteganographyApp:
                     return True, "Possible steganography detected, but not from this application."
                     
             except Exception as e:
-                return False, f"Detection error: {e}"
+                return False, f"Detection error: {str(e)}"
                 
         except Exception as e:
-            return False, f"Detection error: {e}"
+            return False, f"Detection error: {str(e)}"
 
     def validate_gif(self, gif_path):
         """Validate if a file is a valid GIF."""
@@ -1984,7 +1984,7 @@ class SteganographyApp:
             return True, password, author
         except Exception as e:
             logging.error(f"Input validation error: {str(e)}")
-            messagebox.showerror("Validation Error ", {e} )
+            messagebox.showerror("Validation Error", str(e))
             return False, None, None
 
     def update_history_view(self):

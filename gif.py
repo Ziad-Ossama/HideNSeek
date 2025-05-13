@@ -144,9 +144,9 @@ class GIFSteganographyLogic:
     def embed_data(self, carrier_gif_path, data_paths, key_str, password, author, progress_callback, key_is_generated=False):
         """Embed data into the carrier GIF."""
         if not self.get_cipher(key_str, None, key_is_generated):
-            raise ValueError("Invalid encryption key")
+            raise ValueError("Invalid Encryption key")
         if len(data_paths) > self.MAX_FILES_EMBED:
-            raise ValueError(f"Cannot embed more than {self.MAX_FILES_EMBED} files.")
+            raise ValueError(f"Cannot Embed more than {self.MAX_FILES_EMBED} files.")
         password_hash = self.derive_password_hash(password) if password else b'\x00' * 16
         key_hash = hashlib.sha256(self.key).digest()[:16]
 
@@ -262,7 +262,7 @@ class GIFSteganographyLogic:
                 file_metadata.append((filename, ext, data_length))
             except Exception as e:
                 logging.error(f"Failed to decode metadata for file {i + 1}: {str(e)}")
-                raise ValueError(f"Failed to decode metadata for file {i + 1}: {e}")
+                raise ValueError(f"Failed to decode metadata for file {i + 1}: {str(e)}")
 
         files_data = []
         batch_size = 5
@@ -284,7 +284,7 @@ class GIFSteganographyLogic:
                     progress_callback(50 + (25 * (i + 1) // file_count))
                 except Exception as e:
                     logging.error(f"Failed to decrypt/decompress file {filename}: {str(e)}")
-                    raise ValueError(f"Failed to decrypt/decompress file {filename}: {e}")
+                    raise ValueError(f"Failed to decrypt/decompress file {filename}: {str(e)}")
                 finally:
                     del encrypted_data, decrypted_data, decompressed_data
 

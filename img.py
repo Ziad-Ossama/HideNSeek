@@ -108,7 +108,7 @@ class SteganographyLogic:
     def embed_data(self, image_path, data_file_paths, key_str, password, author, update_progress_callback, key_is_generated=False):
         """Embed multiple files into an image."""
         if not self.get_cipher(key_str, None, key_is_generated):
-            raise ValueError("Invalid encryption key or password")
+            raise ValueError("Invalid encryption key")
         if len(data_file_paths) > self.MAX_FILES_EMBED:
             raise ValueError(f"Cannot embed more than {self.MAX_FILES_EMBED} files")
         if not os.path.exists(image_path):
@@ -195,7 +195,7 @@ class SteganographyLogic:
     def extract_data(self, image_path, key_str, password, update_progress_callback, carrier_filename=None, key_is_generated=False):
         """Extract multiple files and metadata from an image with custom filename format."""
         if not self.get_cipher(key_str, None, key_is_generated):
-            raise ValueError("Invalid encryption key or password")
+            raise ValueError("Invalid encryption key")
         if not os.path.exists(image_path):
             raise ValueError("Carrier image does not exist")
 
