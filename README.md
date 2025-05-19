@@ -73,6 +73,14 @@ To Run this Application run
 
 
 ## Screenshots
-wwwww
-sadsadsadasdas![App Screenshot](https://github.com/Ziad-Ossama/HideNSeek/blob/722334e022db5b411b7f5fd2a660adad52e630c9/assets/Add%20a%20heading.png)
+**Image-Stego Page:**
 
+![Image-Stego Page](https://github.com/Ziad-Ossama/HideNSeek/blob/5f3e4b4842883cc96a635f9a676213957b2eae15/assets/Image-Stego_page.png)
+
+**Gif-Stego Page:**
+
+![Gif-Stego Page](https://github.com/Ziad-Ossama/HideNSeek/blob/5f3e4b4842883cc96a635f9a676213957b2eae15/assets/Gif-Stego_page.png)
+
+**History Page:**
+
+![History Page](https://github.com/Ziad-Ossama/HideNSeek/blob/5f3e4b4842883cc96a635f9a676213957b2eae15/assets/History-Stego_page.png)
