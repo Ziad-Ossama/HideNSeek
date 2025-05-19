@@ -1,78 +1,78 @@
-<div align="center"> <img src="assets/Add a heading.png" alt="HideNSeek Logo" width="600"/> <br> <em>Hide your secrets in plain sight</em> <br><br> </div>
-<div align = "center">
-<img alt="License" src="https://img.shields.io/badge/license-MIT-blue">
-<img alt="Python" src="https://img.shields.io/badge/python-3.8+-yellow">
-</div>
-✨ Features
-Dual Steganography Support: Hide data in both static images (PNG, JPG) and animated GIFs
-Military-Grade Encryption: Secure your embedded data with Fernet symmetric encryption
-Intuitive Dark UI: Modern interface with drag-and-drop functionality
-Password Protection: Add an extra layer of security with password authentication
-Audit Trail: Keep track of all steganography operations with built-in history logging
-Cross-Platform: Works seamlessly on Windows, macOS, and Linux
-<div align="center"> <img src="assets/demo.gif" alt="HideNSeek Demo" width="700"/> </div>
-🚀 Quick Start
-Download Ready-to-Use Application
-Skip installation and download the executable for your platform.
 
-Run from Source
-Clone the repository
+![Logo](https://github.com/Ziad-Ossama/HideNSeek/blob/722334e022db5b411b7f5fd2a660adad52e630c9/assets/Add%20a%20heading.png)
 
-Install dependencies
 
-Launch the application
+# HideNSeek – Multi-File Image and GIF Steganography
 
-🛠️ How It Works
-HideNSeek employs sophisticated steganography techniques to conceal your data:
+HideNSeek is a desktop application that hides multiple files inside static images (PNG/JPEG) and animated GIFs using advanced steganography.
 
-Feature	Technology	Benefit
-Image Steganography	LSB (Least Significant Bit)	Virtually undetectable changes to images
-GIF Steganography	Custom frame encoding	Hide data across animation frames
-Encryption	Fernet symmetric encryption	128-bit security for your data
-Authentication	SHA-256 hashing	Verify data integrity
-📸 Screenshots
-<div align="center"> <img src="assets/image-stego.png" alt="Image Steganography Tab" width="400"/> <img src="assets/gif-stego.png" alt="GIF Steganography Tab" width="400"/> <br> <img src="assets/history-tab.png" alt="History Tab" width="400"/> </div>
-🔍 Use Cases
-Secure Communication: Exchange sensitive information without raising suspicion
-Digital Watermarking: Protect your intellectual property by embedding ownership information
-Backup Critical Data: Store important credentials within ordinary-looking media files
-Privacy Protection: Keep your personal information hidden from prying eyes
+The app uses AES-128 encryption (via Fernet), HMAC for file integrity, password protection, and zlib compression. It's designed with CustomTkinter and supports drag-and-drop, making it secure, fast, and user-friendly.
 
-##🧩 ## Project Structure
+
+## Features
+
+- 🔐 AES-128 encryption with Fernet
+- 🔒 Password-based protection using PBKDF2-HMAC
+- ✅ HMAC verification to detect tampering
+- 📦 Multi-file support: 20 files in images, 40 in GIFs
+- 🖼️ LSB-based embedding for images
+- 🎞️ Trailer-byte appending for GIFs
+- 🔍 View metadata without extracting
+- 📂 Operation history saved to JSON
+- 💡 Entropy analysis for carrier images
+- 🖱️ GUI with drag-and-drop (CustomTkinter + tkinterDnD2)
+
+## Project Structure
+    HideNSeek/
+    ├── main.py # GUI with CustomTkinter
+
+    ├── img.py # LSB image steganography logic
+
+    ├── gif.py # GIF trailer-byte steganography logic
+
+    ├── assets/ # Logo and icons
+
+    ├── history.json # Operation history log
+    
+    └── README.md # Project documentation
+## Requirements
+
+- Python 3.8+
+- Pip packages:
+  - `pillow`
+  - `cryptography`
+  - `numpy`
+  - `customtkinter`
+  - `tkinterdnd2`
+  - `pyperclip`
+
+
+## Installation
+1.  **Clone the repository:**
+
+```bash
+> git clone https://github.com/Ziad-Ossama/HideNSeek
 ```
-HideNSeek/
-├── assets/              # Screenshots and demo materials
-├── src/                 # Source code
-│   ├── main.py          # Main application and GUI
-│   ├── img.py           # Image steganography engine
-│   └── gif.py           # GIF steganography engine
-├── history.json         # Operation history storage
-├── requirements.txt     # Python dependencies
-└── README.md            # Documentation
+2.  **Navigate To Project's Directory:**
 
+```bash
+> cd HideNSeek
 ```
----
-⚙️ Technologies
-CustomTkinter: For the sleek, modern UI
-Pillow & NumPy: Image processing and manipulation
-Cryptography: Secure data encryption
-TkinterDnD2: Drag-and-drop functionality
-PyInstaller: Application packaging
-💡 Why Choose HideNSeek?
-User-Friendly: No technical expertise required
-Secure by Design: Multiple layers of security built in
-Free & Open Source: Transparent code you can trust
-Actively Maintained: Regular updates and improvements
-Lightweight: Minimal system resource usage
-🤝 Contributing
-Contributions are welcome! Please feel free to submit a Pull Request.
+3.  **Install Dependencies:**
 
-Fork the repository
-Create your feature branch (git checkout -b feature/amazing-feature)
-Commit your changes (git commit -m 'Add some amazing feature')
-Push to the branch (git push origin feature/amazing-feature)
-Open a Pull Request
-📜 License
-This project is licensed under the MIT License - see the LICENSE file for details.
+```bash
+> pip install -r requirements.txt
+```
+## Deployment
 
-<div align="center"> <p>Made with ❤️ by <a href="https://github.com/Ziad-Ossama">Ziad Ossama</a></p> <p>Star ⭐ this repository if you find it useful!</p> </div>
+To Run this Application run
+
+```bash
+> python main.py
+```
+
+
+## Screenshots
+wwwww
+sadsadsadasdas![App Screenshot](https://github.com/Ziad-Ossama/HideNSeek/blob/722334e022db5b411b7f5fd2a660adad52e630c9/assets/Add%20a%20heading.png)
+
